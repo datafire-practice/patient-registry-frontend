@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from "@testing-library/react"; // Импортируем act
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import DeleteDialog from "../../components/DeleteDialog/DeleteDialog";
 
 describe("DeleteDialog", () => {

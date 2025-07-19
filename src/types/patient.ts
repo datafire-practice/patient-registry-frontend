@@ -1,3 +1,17 @@
+export interface Mkb10 {
+  code: string;
+  name: string;
+}
+
+export interface Disease {
+  id: number;
+  mkb10: Mkb10;
+  startDate: string;
+  endDate?: string | null;
+  prescriptions: string;
+  sickLeaveIssued: boolean;
+}
+
 export interface Patient {
   id: number;
   lastName: string;
@@ -5,7 +19,8 @@ export interface Patient {
   middleName?: string;
   gender: "М" | "Ж";
   birthDate: string;
-  policyNumber: string;
+  insuranceNumber: string;
+  diseases?: Disease[];
 }
 
 export interface PatientFormData {
@@ -14,5 +29,17 @@ export interface PatientFormData {
   middleName?: string;
   gender: "М" | "Ж";
   birthDate: string;
-  policyNumber: string;
+  insuranceNumber: string;
+}
+
+export interface PageInfo {
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface PatientsApiResponse {
+  content: Patient[];
+  page: PageInfo;
 }

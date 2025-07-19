@@ -1,4 +1,3 @@
-// components/PatientTable/patientTable.styles.ts
 import { styled } from "@mui/material/styles";
 import {
   TableContainer,

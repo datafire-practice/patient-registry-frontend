@@ -1,133 +1,158 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { Patient, PatientFormData } from "../types/patient";
-
-const API_URL = "http://localhost:3000/patient";
-const INITIAL_LIMIT = 15;
-const PAGE_LIMIT = 5;
+import type {
+  Patient,
+  PatientFormData,
+  PatientsApiResponse,
+} from "../types/patient";
+import type { AppDispatch } from "../store/store";
+import { API_ENDPOINTS, PAGINATION, ERROR_MESSAGES } from "../utils/constants";
 
 export interface PatientState {
   patients: Patient[];
   loading: boolean;
   error: string | null;
-  nextStart: number;
-  hasMore: boolean;
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  lastLoadedPageSize: number;
+  paginationError: boolean;
+  nextPageToLoad: number;
 }
 
 const initialState: PatientState = {
   patients: [],
   loading: false,
   error: null,
-  nextStart: 0,
-  hasMore: true,
+  currentPage: -1,
+  totalPages: 0,
+  totalElements: 0,
+  lastLoadedPageSize: 0,
+  paginationError: false,
+  nextPageToLoad: 0,
 };
 
-export const fetchPatients = createAsyncThunk(
+export const fetchPatients = createAsyncThunk<
+  PatientsApiResponse,
+  { page: number; reset?: boolean; initialLoad?: boolean; size?: number },
+  { rejectValue: string; dispatch: AppDispatch }
+>(
   "patients/fetchPatients",
   async (
-    {
-      isInitialLoad = false,
-      resetBeforeFetch = false,
-    }: { isInitialLoad?: boolean; resetBeforeFetch?: boolean },
-    { dispatch, getState, rejectWithValue }
-  ) => {
-    try {
-      if (resetBeforeFetch) {
-        dispatch(patientSlice.actions.resetPatients());
-      }
-
-      const state = getState() as { patients: PatientState };
-      const { nextStart } = state.patients;
-      const limit = isInitialLoad ? INITIAL_LIMIT : PAGE_LIMIT;
-      const start = resetBeforeFetch ? 0 : nextStart;
-
-      const response = await axios.get<Patient[]>(
-        `${API_URL}?_start=${start}&_limit=${limit}`
-      );
-      return {
-        patients: response.data,
-        isInitialLoad: resetBeforeFetch || isInitialLoad,
-      };
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : "Неизвестная ошибка при получении"
-      );
-    }
-  }
-);
-
-export const deletePatient = createAsyncThunk(
-  "patients/deletePatient",
-  async (id: number, { dispatch, rejectWithValue }) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      dispatch(patientSlice.actions.deletePatientSuccess(id));
-      await dispatch(
-        fetchPatients({ isInitialLoad: true, resetBeforeFetch: true })
-      );
-      return id;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.code === "ECONNABORTED" || error.response === undefined) {
-          return rejectWithValue("Сервис временно недоступен");
-        }
-        return rejectWithValue(
-          error.response?.data?.message || "Ошибка при удалении пациента"
-        );
-      }
-      return rejectWithValue("Неизвестная ошибка при удалении пациента");
-    }
-  }
-);
-
-export const createPatient = createAsyncThunk(
-  "patients/createPatient",
-  async (patientData: PatientFormData, { dispatch, rejectWithValue }) => {
-    try {
-      await axios.post(API_URL, patientData);
-      await dispatch(
-        fetchPatients({ isInitialLoad: true, resetBeforeFetch: true })
-      );
-      return;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.code === "ECONNABORTED" || error.response === undefined) {
-          return rejectWithValue("Сервис временно недоступен");
-        }
-        return rejectWithValue(
-          error.response?.data?.message || "Ошибка при создании пациента"
-        );
-      }
-      return rejectWithValue("Неизвестная ошибка при создании пациента");
-    }
-  }
-);
-
-export const updatePatient = createAsyncThunk(
-  "patients/updatePatient",
-  async (
-    { id, patientData }: { id: number; patientData: PatientFormData },
+    { page, initialLoad = false, size, reset = false },
     { dispatch, rejectWithValue }
   ) => {
     try {
-      await axios.put(`${API_URL}/${id}`, patientData);
-      await dispatch(
-        fetchPatients({ isInitialLoad: true, resetBeforeFetch: true })
+      if (reset) {
+        dispatch(resetPatientsState());
+      }
+      const fetchSize =
+        size ||
+        (initialLoad
+          ? PAGINATION.INITIAL_PAGE_SIZE
+          : PAGINATION.ADDITIONAL_PAGE_SIZE);
+      const response = await axios.get<PatientsApiResponse>(
+        `${API_ENDPOINTS.PATIENTS}?page=${page}&size=${fetchSize}&sort=id,asc`
       );
-      return;
+      return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.code === "ECONNABORTED" || error.response === undefined) {
-          return rejectWithValue("Сервис временно недоступен");
-        }
         return rejectWithValue(
-          error.response?.data?.message || "Ошибка при обновлении пациента"
+          error.response?.data?.message || ERROR_MESSAGES.FETCH_ERROR
         );
       }
-      return rejectWithValue("Неизвестная ошибка при обновлении пациента");
+      return rejectWithValue(ERROR_MESSAGES.UNKNOWN_ERROR);
+    }
+  }
+);
+
+export const deletePatient = createAsyncThunk<
+  number,
+  number,
+  { dispatch: AppDispatch; rejectValue: string }
+>("patients/deletePatient", async (id, { dispatch, rejectWithValue }) => {
+  try {
+    await axios.delete(`${API_ENDPOINTS.PATIENTS}/${id}`);
+    await dispatch(fetchPatients({ page: 0, reset: true, initialLoad: true }));
+    return id;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (!error.response && error.code === "ECONNABORTED") {
+        return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+      }
+      if (!error.response) {
+        return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+      }
+      return rejectWithValue(
+        error.response?.data?.message || ERROR_MESSAGES.DELETE_ERROR
+      );
+    }
+    return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+  }
+});
+
+export const createPatient = createAsyncThunk<
+  Patient,
+  PatientFormData,
+  { dispatch: AppDispatch; rejectValue: string }
+>(
+  "patients/createPatient",
+  async (patientData, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await axios.post<Patient>(
+        API_ENDPOINTS.PATIENTS,
+        patientData
+      );
+      await dispatch(
+        fetchPatients({ page: 0, reset: true, initialLoad: true })
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (!error.response && error.code === "ECONNABORTED") {
+          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+        }
+        if (!error.response) {
+          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+        }
+        return rejectWithValue(
+          error.response?.data?.message || ERROR_MESSAGES.CREATE_ERROR
+        );
+      }
+      return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+    }
+  }
+);
+
+export const updatePatient = createAsyncThunk<
+  Patient,
+  { id: number; patientData: PatientFormData },
+  { dispatch: AppDispatch; rejectValue: string }
+>(
+  "patients/updatePatient",
+  async ({ id, patientData }, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await axios.put<Patient>(
+        `${API_ENDPOINTS.PATIENTS}/${id}`,
+        patientData
+      );
+      await dispatch(
+        fetchPatients({ page: 0, reset: true, initialLoad: true })
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (!error.response && error.code === "ECONNABORTED") {
+          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+        }
+        if (!error.response) {
+          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+        }
+        return rejectWithValue(
+          error.response?.data?.message || ERROR_MESSAGES.UPDATE_ERROR
+        );
+      }
+      return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
     }
   }
 );
@@ -136,84 +161,95 @@ const patientSlice = createSlice({
   name: "patients",
   initialState,
   reducers: {
-    resetPatients(state) {
-      state.patients = [];
-      state.loading = false;
+    clearError(state: PatientState): void {
       state.error = null;
-      state.nextStart = 0;
-      state.hasMore = true;
     },
-    deletePatientSuccess(state, action: PayloadAction<number>) {
-      state.patients = state.patients.filter(
-        (patient) => patient.id !== action.payload
-      );
-      state.nextStart = state.patients.length;
-    },
-    clearError(state) {
+    resetPatientsState(state: PatientState): void {
+      state.patients = [];
+      state.currentPage = -1;
+      state.totalElements = 0;
+      state.totalPages = 0;
+      state.lastLoadedPageSize = 0;
+      state.paginationError = false;
+      state.nextPageToLoad = 0;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPatients.pending, (state) => {
+      .addCase(fetchPatients.pending, (state: PatientState) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPatients.fulfilled, (state, action) => {
-        if (action.payload.isInitialLoad) {
-          state.patients = action.payload.patients;
+      .addCase(fetchPatients.fulfilled, (state: PatientState, action) => {
+        if (action.meta.arg.reset) {
+          state.patients = action.payload.content;
         } else {
-          state.patients = [...state.patients, ...action.payload.patients];
+          const newPatients = action.payload.content.filter(
+            (p) => !state.patients.some((sp) => sp.id === p.id)
+          );
+          state.patients.push(...newPatients);
         }
-        state.nextStart = state.patients.length;
-        state.hasMore = action.payload.patients.length > 0;
+        state.currentPage = action.payload.page.number;
+        state.totalPages = action.payload.page.totalPages;
+        state.totalElements = action.payload.page.totalElements;
+        state.lastLoadedPageSize = action.payload.content.length;
         state.loading = false;
         state.error = null;
+        state.paginationError = false;
+        state.nextPageToLoad = state.currentPage + 1;
       })
-      .addCase(fetchPatients.rejected, (state, action) => {
+      .addCase(fetchPatients.rejected, (state: PatientState, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.paginationError =
+          state.patients.length > 0 && !action.meta.arg.reset;
+        state.error = ERROR_MESSAGES.FETCH_ERROR;
+        if (!state.paginationError && state.patients.length === 0) {
+          state.nextPageToLoad = 0;
+          state.patients = [];
+        }
       })
-      .addCase(deletePatient.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deletePatient.fulfilled, (state) => {
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(deletePatient.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(createPatient.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createPatient.fulfilled, (state) => {
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(createPatient.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(updatePatient.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updatePatient.fulfilled, (state) => {
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(updatePatient.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
+      .addMatcher(
+        (action) =>
+          [
+            deletePatient.pending.type,
+            createPatient.pending.type,
+            updatePatient.pending.type,
+          ].includes(action.type),
+        (state: PatientState) => {
+          state.loading = true;
+          state.error = null;
+          state.paginationError = false;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          [
+            deletePatient.rejected.type,
+            createPatient.rejected.type,
+            updatePatient.rejected.type,
+          ].includes(action.type),
+        (state: PatientState, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.error = action.payload;
+          state.paginationError = false;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          [
+            deletePatient.fulfilled.type,
+            createPatient.fulfilled.type,
+            updatePatient.fulfilled.type,
+          ].includes(action.type),
+        (state: PatientState) => {
+          state.loading = false;
+          state.paginationError = false;
+        }
+      );
   },
 });
 
-export const { resetPatients, deletePatientSuccess, clearError } =
-  patientSlice.actions;
-
+export const { clearError, resetPatientsState } = patientSlice.actions;
 export default patientSlice.reducer;

@@ -17,7 +17,7 @@ describe("PatientModalForm", () => {
     middleName: "Иванович",
     gender: "М",
     birthDate: "1990-01-01",
-    policyNumber: "1234567890123456",
+    insuranceNumber: "1234567890123456",
   };
 
   const Wrapper = ({

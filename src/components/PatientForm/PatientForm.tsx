@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { PatientFormData } from "../../types/patient";
 import {
@@ -10,6 +10,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  SelectChangeEvent,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format, parseISO } from "date-fns";
@@ -28,7 +29,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty, isValid },
     reset,
   } = useForm<PatientFormData>({
     defaultValues: defaultValues || {
@@ -37,43 +38,28 @@ const PatientForm: React.FC<PatientFormProps> = ({
       middleName: "",
       gender: "М",
       birthDate: format(new Date(), "yyyy-MM-dd"),
-      policyNumber: "",
+      insuranceNumber: "",
     },
+    mode: "onTouched",
+    reValidateMode: "onChange",
   });
-
-  const [initialValues, setInitialValues] = useState<PatientFormData | null>(
-    null
-  );
-  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect((): void => {
     if (defaultValues) {
-      setInitialValues(defaultValues);
       reset(defaultValues);
     }
   }, [defaultValues, reset]);
 
-  useEffect((): (() => void) => {
-    const subscription = watch((values): void => {
-      if (initialValues) {
-        const changed = Object.keys(values).some(
-          (key) =>
-            values[key as keyof PatientFormData] !==
-            initialValues[key as keyof PatientFormData]
-        );
-        setHasChanges(changed);
-      } else {
-        setHasChanges(true);
-      }
-    });
-    return (): void => subscription.unsubscribe();
-  }, [watch, initialValues]);
-
   const handleDateChange = (date: Date | null): void => {
     if (date) {
-      setValue("birthDate", format(date, "yyyy-MM-dd"), { shouldDirty: true });
+      setValue("birthDate", format(date, "yyyy-MM-dd"), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
     }
   };
+
+  const birthDateValue = watch("birthDate");
 
   return (
     <Box
@@ -154,7 +140,13 @@ const PatientForm: React.FC<PatientFormProps> = ({
           <Select
             label="Пол*"
             {...register("gender", { required: "Обязательное поле" })}
-            defaultValue="М"
+            defaultValue={defaultValues?.gender || "М"}
+            onChange={(e: SelectChangeEvent<"М" | "Ж">): void => {
+              setValue("gender", e.target.value as "М" | "Ж", {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            }}
           >
             <MenuItem value="М">Мужской</MenuItem>
             <MenuItem value="Ж">Женский</MenuItem>
@@ -166,7 +158,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
 
         <DatePicker
           label="Дата рождения*"
-          value={watch("birthDate") ? parseISO(watch("birthDate")) : null}
+          value={birthDateValue ? parseISO(birthDateValue) : null}
           onChange={handleDateChange}
           maxDate={new Date()}
           slotProps={{
@@ -182,15 +174,15 @@ const PatientForm: React.FC<PatientFormProps> = ({
       <TextField
         label="Номер полиса ОМС*"
         fullWidth
-        {...register("policyNumber", {
+        {...register("insuranceNumber", {
           required: "Обязательное поле",
           pattern: {
             value: /^\d{16}$/,
             message: "Должно быть 16 цифр",
           },
         })}
-        error={!!errors.policyNumber}
-        helperText={errors.policyNumber?.message}
+        error={!!errors.insuranceNumber}
+        helperText={errors.insuranceNumber?.message}
       />
 
       <Button
@@ -199,7 +191,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
         color="primary"
         fullWidth
         sx={{ mt: 2 }}
-        disabled={!hasChanges}
+        disabled={!isDirty || !isValid}
       >
         Сохранить
       </Button>

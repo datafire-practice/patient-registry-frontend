@@ -12,7 +12,7 @@ import type { PatientFormData } from "../../types/patient";
 interface PatientModalFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: PatientFormData) => void;
+  onSubmit: (data: PatientFormData) => Promise<void>;
   defaultValues?: PatientFormData | null;
   title: string;
 }
@@ -29,9 +29,8 @@ const PatientModalForm: React.FC<PatientModalFormProps> = ({
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <PatientForm
-          onSubmit={(data) => {
-            onSubmit(data);
-            onClose();
+          onSubmit={async (data) => {
+            await onSubmit(data);
           }}
           defaultValues={defaultValues || undefined}
         />

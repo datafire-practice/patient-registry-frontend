@@ -7,6 +7,7 @@ import {
   createPatient,
   updatePatient,
   clearError,
+  resetPatientsState,
 } from "../../store/patientSlice";
 import {
   Table,
@@ -17,11 +18,11 @@ import {
   IconButton,
   Typography,
   Container,
-  Button,
   Snackbar,
   Alert,
   CircularProgress,
   Box,
+  Link,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -46,11 +47,13 @@ import {
   StyledFab,
 } from "./patientTable.styles";
 
+import { PAGINATION } from "../../utils/constants";
+
 const PatientTable: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { patients, loading, error, hasMore } = useSelector(
-    (state: RootState) => state.patients
-  );
+  const dispatch: AppDispatch = useDispatch<AppDispatch>();
+  const { patients, loading, error, totalElements, paginationError } =
+    useSelector((state: RootState) => state.patients);
+
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
   const [openCreateDialog, setOpenCreateDialog] = useState<boolean>(false);
@@ -62,28 +65,51 @@ const PatientTable: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  const [allowScrollLoad, setAllowScrollLoad] = useState(true);
+  const hasMore = patients.length < totalElements;
+
+  const calculateNextPageToLoad = useCallback((): number => {
+    if (patients.length === 0) {
+      return 0;
+    }
+    return Math.ceil(patients.length / PAGINATION.ADDITIONAL_PAGE_SIZE);
+  }, [patients.length]);
 
   useEffect((): void => {
-    dispatch(fetchPatients({ isInitialLoad: true, resetBeforeFetch: true }));
-    setAllowScrollLoad(true);
+    dispatch(
+      fetchPatients({
+        page: 0,
+        reset: true,
+        initialLoad: true,
+        size: PAGINATION.INITIAL_PAGE_SIZE,
+      })
+    );
   }, [dispatch]);
 
   const handleScroll = useCallback((): void => {
-    if (!tableContainerRef.current || loading || !hasMore || !allowScrollLoad)
+    if (!tableContainerRef.current || loading || !hasMore || paginationError)
       return;
 
     const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
     if (scrollHeight - scrollTop <= clientHeight + 100) {
-      dispatch(fetchPatients({ isInitialLoad: false }));
+      const nextPage = calculateNextPageToLoad();
+      dispatch(
+        fetchPatients({
+          page: nextPage,
+          reset: false,
+          initialLoad: false,
+          size: PAGINATION.ADDITIONAL_PAGE_SIZE,
+        })
+      );
     }
-  }, [dispatch, loading, hasMore, allowScrollLoad]);
+  }, [dispatch, loading, hasMore, paginationError, calculateNextPageToLoad]);
 
   useEffect((): (() => void) => {
     const container = tableContainerRef.current;
     if (container) {
       container.addEventListener("scroll", handleScroll);
-      return (): void => container.removeEventListener("scroll", handleScroll);
+      return (): void => {
+        container.removeEventListener("scroll", handleScroll);
+      };
     }
     return (): void => {};
   }, [handleScroll]);
@@ -94,19 +120,14 @@ const PatientTable: React.FC = () => {
   };
 
   const handleDeleteConfirm = async (): Promise<void> => {
-    if (!selectedPatientId) {
-      setOpenDeleteDialog(false);
-      return;
-    }
-    setOpenDeleteDialog(false);
-    try {
-      setAllowScrollLoad(false);
-      await dispatch(deletePatient(selectedPatientId)).unwrap();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_error) {
-      // Ошибка будет обработана в Redux и записана в state.patients.error
-    } finally {
-      setAllowScrollLoad(true);
+    if (selectedPatientId) {
+      try {
+        await dispatch(deletePatient(selectedPatientId)).unwrap();
+        setOpenDeleteDialog(false);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (e) {
+        setOpenDeleteDialog(false);
+      }
     }
   };
 
@@ -117,7 +138,7 @@ const PatientTable: React.FC = () => {
       middleName: patient.middleName || "",
       gender: patient.gender,
       birthDate: patient.birthDate,
-      policyNumber: patient.policyNumber,
+      insuranceNumber: patient.insuranceNumber,
     });
     setSelectedPatientId(patient.id);
     setOpenEditDialog(true);
@@ -131,33 +152,35 @@ const PatientTable: React.FC = () => {
 
   const handleRefresh = async (): Promise<void> => {
     setIsRefreshing(true);
-    setAllowScrollLoad(false);
-    try {
-      await dispatch(
-        fetchPatients({ isInitialLoad: true, resetBeforeFetch: true })
-      );
-    } finally {
-      setIsRefreshing(false);
-      setAllowScrollLoad(true);
+    if (tableContainerRef.current && !paginationError) {
+      tableContainerRef.current.scrollTop = 0;
     }
-  };
 
-  const handleErrorRefresh = async (): Promise<void> => {
-    setAllowScrollLoad(false);
-    try {
+    if (paginationError) {
+      const nextPage = calculateNextPageToLoad();
       await dispatch(
         fetchPatients({
-          isInitialLoad: patients.length === 0,
-          resetBeforeFetch: false,
+          page: nextPage,
+          reset: false,
+          initialLoad: false,
+          size: PAGINATION.ADDITIONAL_PAGE_SIZE,
         })
-      );
-    } finally {
-      setAllowScrollLoad(true);
+      ).unwrap();
+    } else {
+      dispatch(resetPatientsState());
+      await dispatch(
+        fetchPatients({
+          page: 0,
+          reset: true,
+          initialLoad: true,
+          size: PAGINATION.INITIAL_PAGE_SIZE,
+        })
+      ).unwrap();
     }
+    setIsRefreshing(false);
   };
 
   const handleSubmitForm = async (data: PatientFormData): Promise<void> => {
-    setAllowScrollLoad(false);
     try {
       if (selectedPatientId) {
         await dispatch(
@@ -166,11 +189,9 @@ const PatientTable: React.FC = () => {
       } else {
         await dispatch(createPatient(data)).unwrap();
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_error) {
-      // Ошибка будет обработана в Redux и записана в state.patients.error
     } finally {
-      setAllowScrollLoad(true);
+      setOpenEditDialog(false);
+      setOpenCreateDialog(false);
     }
   };
 
@@ -178,22 +199,21 @@ const PatientTable: React.FC = () => {
     dispatch(clearError());
   };
 
-  const snackbarError = error;
-
-  if (error && patients.length === 0) {
+  if (error && (patients.length === 0 || paginationError) && !loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <ErrorContainer>
           <Typography variant="h6" color="error">
-            При получении реестра произошла ошибка.
+            {error.split("Обновить")[0]}
+            <Link
+              component="button"
+              variant="h6"
+              onClick={handleRefresh}
+              sx={{ color: "error.main", textDecoration: "underline" }}
+            >
+              Обновить
+            </Link>
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleErrorRefresh}
-          >
-            Обновить
-          </Button>
         </ErrorContainer>
       </Container>
     );
@@ -221,8 +241,8 @@ const PatientTable: React.FC = () => {
       )}
 
       <Snackbar
-        open={!!snackbarError}
-        autoHideDuration={6000}
+        open={!!error && !paginationError && patients.length > 0}
+        autoHideDuration={3000}
         onClose={handleCloseErrorSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
@@ -232,7 +252,7 @@ const PatientTable: React.FC = () => {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {snackbarError}
+          {error}
         </Alert>
       </Snackbar>
 
@@ -260,14 +280,14 @@ const PatientTable: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                patients.map((patient) => (
+                patients.map((patient: Patient) => (
                   <TableRow key={patient.id} hover>
                     <NameTableCell>
                       {`${patient.lastName} ${patient.firstName} ${
                         patient.middleName || ""
                       }`}
                     </NameTableCell>
-                    <BodyTableCell>{patient.policyNumber}</BodyTableCell>
+                    <BodyTableCell>{patient.insuranceNumber}</BodyTableCell>
                     <BodyTableCell>
                       {patient.gender === "М" ? "Мужской" : "Женский"}
                     </BodyTableCell>
@@ -277,10 +297,16 @@ const PatientTable: React.FC = () => {
                       })}
                     </BodyTableCell>
                     <BodyTableCell>
-                      <IconButton onClick={() => handleEditClick(patient)}>
+                      <IconButton
+                        onClick={(): void => handleEditClick(patient)}
+                        aria-label={`Редактировать пациента ${patient.lastName}`}
+                      >
                         <EditIcon color="primary" />
                       </IconButton>
-                      <IconButton onClick={() => handleDeleteClick(patient.id)}>
+                      <IconButton
+                        onClick={(): void => handleDeleteClick(patient.id)}
+                        aria-label={`Удалить пациента ${patient.lastName}`}
+                      >
                         <DeleteIcon color="error" />
                       </IconButton>
                     </BodyTableCell>
@@ -296,16 +322,18 @@ const PatientTable: React.FC = () => {
           )}
         </StyledTableContainer>
         <FooterContainer>
-          <RecordsCounter>Показано записей: {patients.length}</RecordsCounter>
+          <RecordsCounter>
+            Показано записей: {patients.length} из {totalElements}
+          </RecordsCounter>
         </FooterContainer>
       </StyledPaper>
 
       <FabContainer>
         <StyledFab
           color="primary"
-          aria-label="refresh"
+          aria-label="Обновить список пациентов"
           onClick={handleRefresh}
-          disabled={isRefreshing}
+          disabled={isRefreshing || loading}
         >
           {isRefreshing ? (
             <CircularProgress size={24} color="inherit" />
@@ -313,26 +341,30 @@ const PatientTable: React.FC = () => {
             <RefreshIcon />
           )}
         </StyledFab>
-        <StyledFab color="primary" aria-label="add" onClick={handleCreateClick}>
+        <StyledFab
+          color="primary"
+          aria-label="Добавить нового пациента"
+          onClick={handleCreateClick}
+        >
           <AddIcon />
         </StyledFab>
       </FabContainer>
 
       <DeleteDialog
         open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
+        onClose={(): void => setOpenDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
       />
       <PatientModalForm
         open={openEditDialog}
-        onClose={() => setOpenEditDialog(false)}
+        onClose={(): void => setOpenEditDialog(false)}
         onSubmit={handleSubmitForm}
         defaultValues={selectedPatient}
         title="Редактирование пациента"
       />
       <PatientModalForm
         open={openCreateDialog}
-        onClose={() => setOpenCreateDialog(false)}
+        onClose={(): void => setOpenCreateDialog(false)}
         onSubmit={handleSubmitForm}
         title="Добавление нового пациента"
       />
