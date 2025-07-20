@@ -38,7 +38,6 @@ import DeleteDialog from "../DeleteDialog/DeleteDialog";
 import PatientDetailsModal from "../PatientDetailModal/PatientDetailsModal";
 import PatientModalForm from "../PatientModalForm/PatientModalForm";
 import type { PatientFormData, Patient } from "../../types/patient";
-
 import { PAGINATION } from "../../utils/constants";
 
 const PatientTable: React.FC = () => {
@@ -210,7 +209,14 @@ const PatientTable: React.FC = () => {
 
   if (error && (patients.length === 0 || paginationError) && !loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          py: 3,
+          width: { xs: "100%", lg: "1440px", xl: "1920px" },
+          px: { xs: 2, lg: 3 },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -221,13 +227,21 @@ const PatientTable: React.FC = () => {
             gap: "16px",
           }}
         >
-          <Typography variant="h6" color="error">
+          <Typography
+            variant="h6"
+            color="error"
+            sx={{ fontSize: { xs: "1rem", lg: "1.25rem" } }}
+          >
             {error.split("Обновить")[0]}
             <Link
               component="button"
               variant="h6"
               onClick={handleRefresh}
-              sx={{ color: "error.main", textDecoration: "underline" }}
+              sx={{
+                color: "error.main",
+                textDecoration: "underline",
+                fontSize: { xs: "1rem", lg: "1.25rem" },
+              }}
             >
               Обновить
             </Link>
@@ -238,7 +252,15 @@ const PatientTable: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3, position: "relative" }}>
+    <Container
+      maxWidth={false}
+      sx={{
+        py: 3,
+        width: { xs: "100%", lg: "1440px", xl: "1920px" },
+        px: { xs: 2, lg: 3 },
+        position: "relative",
+      }}
+    >
       {loading && patients.length === 0 && (
         <Box
           sx={{
@@ -268,7 +290,7 @@ const PatientTable: React.FC = () => {
           onClose={handleCloseErrorSnackbar}
           severity="error"
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", fontSize: { xs: "0.875rem", lg: "1rem" } }}
         >
           {error}
         </Alert>
@@ -278,6 +300,9 @@ const PatientTable: React.FC = () => {
         elevation={3}
         sx={{
           borderRadius: 4,
+          width: "100%",
+          maxWidth: { xs: "100%", lg: "1440px", xl: "1920px" },
+          mx: "auto",
         }}
       >
         <TableContainer
@@ -285,7 +310,7 @@ const PatientTable: React.FC = () => {
           sx={{
             overflow: "auto",
             borderRadius: "8px",
-            maxHeight: "calc(100vh - 120px)",
+            maxHeight: { xs: "calc(100vh - 150px)", lg: "calc(100vh - 120px)" },
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": { width: "6px" },
             "&::-webkit-scrollbar-track": { background: "#f1f1f1" },
@@ -303,8 +328,8 @@ const PatientTable: React.FC = () => {
                   sx={{
                     background: "#f5f5f5",
                     fontWeight: "bold",
-                    fontSize: "0.95rem",
-                    padding: "14.4px 16px",
+                    fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                    padding: { xs: "10px 12px", lg: "14.4px 16px" },
                     borderBottom: "2px solid #ddd",
                   }}
                 >
@@ -314,8 +339,8 @@ const PatientTable: React.FC = () => {
                   sx={{
                     background: "#f5f5f5",
                     fontWeight: "bold",
-                    fontSize: "0.95rem",
-                    padding: "14.4px 16px",
+                    fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                    padding: { xs: "10px 12px", lg: "14.4px 16px" },
                     borderBottom: "2px solid #ddd",
                   }}
                 >
@@ -325,8 +350,8 @@ const PatientTable: React.FC = () => {
                   sx={{
                     background: "#f5f5f5",
                     fontWeight: "bold",
-                    fontSize: "0.95rem",
-                    padding: "14.4px 16px",
+                    fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                    padding: { xs: "10px 12px", lg: "14.4px 16px" },
                     borderBottom: "2px solid #ddd",
                   }}
                 >
@@ -336,8 +361,8 @@ const PatientTable: React.FC = () => {
                   sx={{
                     background: "#f5f5f5",
                     fontWeight: "bold",
-                    fontSize: "0.95rem",
-                    padding: "14.4px 16px",
+                    fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                    padding: { xs: "10px 12px", lg: "14.4px 16px" },
                     borderBottom: "2px solid #ddd",
                   }}
                 >
@@ -347,8 +372,8 @@ const PatientTable: React.FC = () => {
                   sx={{
                     background: "#f5f5f5",
                     fontWeight: "bold",
-                    fontSize: "0.95rem",
-                    padding: "14.4px 16px",
+                    fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                    padding: { xs: "10px 12px", lg: "14.4px 16px" },
                     borderBottom: "2px solid #ddd",
                   }}
                 >
@@ -366,10 +391,13 @@ const PatientTable: React.FC = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         height: "100px",
-                        padding: "32px",
+                        padding: { xs: "24px", lg: "32px" },
                       }}
                     >
-                      <Typography variant="h6">
+                      <Typography
+                        variant="h6"
+                        sx={{ fontSize: { xs: "1rem", lg: "1.25rem" } }}
+                      >
                         В реестре нет записей
                       </Typography>
                     </Box>
@@ -385,43 +413,63 @@ const PatientTable: React.FC = () => {
                   >
                     <TableCell
                       sx={{
-                        maxWidth: "300px",
+                        maxWidth: { xs: "200px", lg: "300px" },
                         wordBreak: "break-word",
                         whiteSpace: "normal",
                         overflowWrap: "break-word",
-                        padding: "12px 16px",
+                        padding: { xs: "8px 12px", lg: "12px 16px" },
+                        fontSize: { xs: "0.85rem", lg: "0.95rem" },
                       }}
                     >
                       {`${patient.lastName} ${patient.firstName} ${
                         patient.middleName || ""
                       }`}
                     </TableCell>
-                    <TableCell sx={{ padding: "12px 16px" }}>
+                    <TableCell
+                      sx={{
+                        padding: { xs: "8px 12px", lg: "12px 16px" },
+                        fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                      }}
+                    >
                       {patient.insuranceNumber}
                     </TableCell>
-                    <TableCell sx={{ padding: "12px 16px" }}>
+                    <TableCell
+                      sx={{
+                        padding: { xs: "8px 12px", lg: "12px 16px" },
+                        fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                      }}
+                    >
                       {patient.gender === "М" ? "Мужской" : "Женский"}
                     </TableCell>
-                    <TableCell sx={{ padding: "12px 16px" }}>
+                    <TableCell
+                      sx={{
+                        padding: { xs: "8px 12px", lg: "12px 16px" },
+                        fontSize: { xs: "0.85rem", lg: "0.95rem" },
+                      }}
+                    >
                       {format(new Date(patient.birthDate), "dd MMMM yyyy", {
                         locale: ru,
                       })}
                     </TableCell>
                     <TableCell
                       onClick={(e) => e.stopPropagation()}
-                      sx={{ padding: "12px 16px" }}
+                      sx={{
+                        padding: { xs: "8px 12px", lg: "12px 16px" },
+                      }}
                     >
                       <IconButton
                         onClick={(): void => handleEditClick(patient)}
                         aria-label={`Редактировать пациента ${patient.lastName}`}
+                        size="small"
                       >
-                        <EditIcon color="primary" />
+                        <EditIcon color="primary" fontSize="small" />
                       </IconButton>
                       <IconButton
                         onClick={(): void => handleDeleteClick(patient.id)}
                         aria-label={`Удалить пациента ${patient.lastName}`}
+                        size="small"
                       >
-                        <DeleteIcon color="error" />
+                        <DeleteIcon color="error" fontSize="small" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -431,7 +479,7 @@ const PatientTable: React.FC = () => {
           </Table>
           {loading && patients.length > 0 && (
             <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-              <CircularProgress />
+              <CircularProgress size={40} />
             </Box>
           )}
         </TableContainer>
@@ -440,7 +488,7 @@ const PatientTable: React.FC = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            padding: "20px",
+            padding: { xs: "16px", lg: "20px" },
             backgroundColor: "#f5f5f5",
             borderBottomLeftRadius: "4px",
             borderBottomRightRadius: "4px",
@@ -448,7 +496,7 @@ const PatientTable: React.FC = () => {
         >
           <Typography
             sx={{
-              fontSize: "1.1rem",
+              fontSize: { xs: "0.9rem", lg: "1.1rem" },
               fontWeight: 500,
               color: "rgba(0, 0, 0, 0.6)",
             }}
@@ -461,11 +509,11 @@ const PatientTable: React.FC = () => {
       <Box
         sx={{
           position: "fixed",
-          bottom: "24px",
-          right: "24px",
+          bottom: { xs: "16px", lg: "24px" },
+          right: { xs: "16px", lg: "24px" },
           zIndex: 1000,
           display: "flex",
-          gap: "16px",
+          gap: { xs: "12px", lg: "16px" },
         }}
       >
         <Fab
@@ -473,6 +521,7 @@ const PatientTable: React.FC = () => {
           aria-label="Обновить список пациентов"
           onClick={handleRefresh}
           disabled={isRefreshing || loading}
+          size="medium"
           sx={{
             boxShadow:
               "0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)",
@@ -481,19 +530,20 @@ const PatientTable: React.FC = () => {
           {isRefreshing ? (
             <CircularProgress size={24} color="inherit" />
           ) : (
-            <RefreshIcon />
+            <RefreshIcon fontSize="medium" />
           )}
         </Fab>
         <Fab
           color="primary"
           aria-label="Добавить нового пациента"
           onClick={handleCreateClick}
+          size="medium"
           sx={{
             boxShadow:
               "0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)",
           }}
         >
-          <AddIcon />
+          <AddIcon fontSize="medium" />
         </Fab>
       </Box>
 
@@ -515,7 +565,6 @@ const PatientTable: React.FC = () => {
         onSubmit={handleSubmitForm}
         title="Добавление нового пациента"
       />
-
       <PatientDetailsModal
         open={openDetailsModal}
         onClose={handleCloseDetailsModal}

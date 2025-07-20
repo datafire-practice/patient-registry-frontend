@@ -69,13 +69,15 @@ const PatientForm: React.FC<PatientFormProps> = ({
         display: "flex",
         flexDirection: "column",
         gap: 3,
-        p: 1,
+        p: { xs: 1, lg: 2 },
         width: "100%",
         "& .MuiOutlinedInput-root": {
           borderRadius: 2,
+          fontSize: { xs: "0.875rem", lg: "1rem" },
         },
         "& .MuiButton-root": {
           borderRadius: 2,
+          fontSize: { xs: "0.875rem", lg: "1rem" },
         },
       }}
     >
@@ -85,8 +87,8 @@ const PatientForm: React.FC<PatientFormProps> = ({
           gap: 2,
           flexWrap: "wrap",
           "& > *": {
-            flex: "1 1 30%",
-            minWidth: "200px",
+            flex: { xs: "1 1 100%", lg: "1 1 30%" },
+            minWidth: { xs: "100%", lg: "200px" },
           },
         }}
       >
@@ -102,6 +104,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
           })}
           error={!!errors.lastName}
           helperText={errors.lastName?.message}
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
         />
         <TextField
           label="Имя*"
@@ -115,6 +118,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
           })}
           error={!!errors.firstName}
           helperText={errors.firstName?.message}
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
         />
         <TextField
           label="Отчество"
@@ -127,6 +131,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
           })}
           error={!!errors.middleName}
           helperText={errors.middleName?.message}
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
         />
       </Box>
 
@@ -136,12 +141,16 @@ const PatientForm: React.FC<PatientFormProps> = ({
           gap: 2,
           flexWrap: "wrap",
           "& > *": {
-            flex: "1 1 45%",
-            minWidth: "200px",
+            flex: { xs: "1 1 100%", lg: "1 1 45%" },
+            minWidth: { xs: "100%", lg: "200px" },
           },
         }}
       >
-        <FormControl fullWidth error={!!errors.gender}>
+        <FormControl
+          fullWidth
+          error={!!errors.gender}
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
+        >
           <InputLabel>Пол*</InputLabel>
           <Select
             label="Пол*"
@@ -153,12 +162,17 @@ const PatientForm: React.FC<PatientFormProps> = ({
                 shouldValidate: true,
               });
             }}
+            sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
           >
             <MenuItem value="М">Мужской</MenuItem>
             <MenuItem value="Ж">Женский</MenuItem>
           </Select>
           {errors.gender && (
-            <FormHelperText>{errors.gender.message}</FormHelperText>
+            <FormHelperText
+              sx={{ fontSize: { xs: "0.75rem", lg: "0.875rem" } }}
+            >
+              {errors.gender.message}
+            </FormHelperText>
           )}
         </FormControl>
 
@@ -172,6 +186,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
               fullWidth: true,
               error: !!errors.birthDate,
               helperText: errors.birthDate?.message,
+              sx: { fontSize: { xs: "0.875rem", lg: "1rem" } },
             },
           }}
         />
@@ -189,6 +204,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
         })}
         error={!!errors.insuranceNumber}
         helperText={errors.insuranceNumber?.message}
+        sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
       />
 
       <Button
@@ -196,7 +212,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
         variant="contained"
         color="primary"
         fullWidth
-        sx={{ mt: 2 }}
+        sx={{ mt: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
         disabled={!isDirty || !isValid}
       >
         Сохранить

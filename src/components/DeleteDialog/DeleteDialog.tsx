@@ -26,21 +26,34 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
       sx={{
         "& .MuiDialog-paper": {
           borderRadius: "8px",
+          maxWidth: { xs: "100%", lg: "500px" },
+          mx: "auto",
         },
       }}
     >
-      <DialogTitle>Подтверждение удаления</DialogTitle>
+      <DialogTitle sx={{ fontSize: { xs: "1.1rem", lg: "1.25rem" } }}>
+        Подтверждение удаления
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}>
           Вы уверены, что хотите удалить этого пациента? Это действие нельзя
           отменить.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button
+          onClick={onClose}
+          color="primary"
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
+        >
           Отмена
         </Button>
-        <Button onClick={onConfirm} color="error" autoFocus>
+        <Button
+          onClick={onConfirm}
+          color="error"
+          autoFocus
+          sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
+        >
           Удалить
         </Button>
       </DialogActions>

@@ -30,20 +30,25 @@ const DiseaseModalForm: React.FC<DiseaseModalFormProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: {
           borderRadius: 3,
+          maxWidth: { xs: "100%", lg: "900px", xl: "1200px" },
+          mx: "auto",
         },
       }}
     >
-      <DialogTitle sx={{ pb: 2 }}>
+      <DialogTitle sx={{ pb: 2, fontSize: { xs: "1.1rem", lg: "1.25rem" } }}>
         {mode === "add"
           ? "Добавление заболевания"
           : "Редактирование заболевания"}
       </DialogTitle>
-      <DialogContent dividers sx={{ borderColor: "divider" }}>
+      <DialogContent
+        dividers
+        sx={{ borderColor: "divider", p: { xs: 2, lg: 3 } }}
+      >
         <DiseaseForm
           onSubmit={onSubmit}
           patientId={patientId}
@@ -53,7 +58,11 @@ const DiseaseModalForm: React.FC<DiseaseModalFormProps> = ({
         />
       </DialogContent>
       <DialogActions sx={{ pt: 2, pr: 3, pb: 2 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ borderRadius: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
+        >
           Отмена
         </Button>
       </DialogActions>

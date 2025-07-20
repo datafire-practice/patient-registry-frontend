@@ -164,42 +164,85 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: {
           borderRadius: 3,
+          maxWidth: { xs: "100%", lg: "900px", xl: "1200px" },
+          mx: "auto",
         },
       }}
     >
-      <DialogTitle sx={{ pb: 2 }}>Детальная информация о пациенте</DialogTitle>
-      <DialogContent dividers sx={{ borderColor: "divider" }}>
+      <DialogTitle sx={{ pb: 2, fontSize: { xs: "1.1rem", lg: "1.25rem" } }}>
+        Детальная информация о пациенте
+      </DialogTitle>
+      <DialogContent
+        dividers
+        sx={{ borderColor: "divider", p: { xs: 2, lg: 3 } }}
+      >
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: { xs: "1rem", lg: "1.1rem" } }}
+          >
             ФИО:{" "}
-            <Typography component="span" variant="body1" color="text.secondary">
+            <Typography
+              component="span"
+              variant="body1"
+              color="text.secondary"
+              sx={{ fontSize: { xs: "0.9rem", lg: "1rem" } }}
+            >
               {`${patient.lastName} ${patient.firstName} ${
                 patient.middleName || ""
               }`}
             </Typography>
           </Typography>
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: { xs: "1rem", lg: "1.1rem" } }}
+          >
             Пол:{" "}
-            <Typography component="span" variant="body1" color="text.secondary">
+            <Typography
+              component="span"
+              variant="body1"
+              color="text.secondary"
+              sx={{ fontSize: { xs: "0.9rem", lg: "1rem" } }}
+            >
               {patient.gender === "М" ? "Мужской" : "Женский"}
             </Typography>
           </Typography>
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: { xs: "1rem", lg: "1.1rem" } }}
+          >
             Дата рождения:{" "}
-            <Typography component="span" variant="body1" color="text.secondary">
+            <Typography
+              component="span"
+              variant="body1"
+              color="text.secondary"
+              sx={{ fontSize: { xs: "0.9rem", lg: "1rem" } }}
+            >
               {format(new Date(patient.birthDate), "dd MMMM yyyy", {
                 locale: ru,
               })}
             </Typography>
           </Typography>
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: { xs: "1rem", lg: "1.1rem" } }}
+          >
             Номер полиса ОМС:{" "}
-            <Typography component="span" variant="body1" color="text.secondary">
+            <Typography
+              component="span"
+              variant="body1"
+              color="text.secondary"
+              sx={{ fontSize: { xs: "0.9rem", lg: "1rem" } }}
+            >
               {patient.insuranceNumber}
             </Typography>
           </Typography>
@@ -213,14 +256,20 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
             mb: 2,
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              fontSize: { xs: "1.1rem", lg: "1.25rem" },
+            }}
+          >
             Заболевания:
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAddClick}
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
           >
             Добавить заболевание
           </Button>
@@ -228,23 +277,34 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
 
         {diseasesLoading && diseasesCurrentPage < 0 ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-            <CircularProgress />
+            <CircularProgress size={40} />
           </Box>
         ) : diseasesError ? (
           <Box sx={{ textAlign: "center", py: 2 }}>
-            <Typography color="error">
+            <Typography
+              color="error"
+              sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
+            >
               {diseasesError.split("Обновить")[0]}
               <Link
                 component="button"
                 onClick={handleRefreshDiseases}
-                sx={{ ml: 1, textDecoration: "underline" }}
+                sx={{
+                  ml: 1,
+                  textDecoration: "underline",
+                  fontSize: { xs: "0.875rem", lg: "1rem" },
+                }}
               >
                 Обновить
               </Link>
             </Typography>
           </Box>
         ) : patientDiseases.length === 0 ? (
-          <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
+          <Typography
+            variant="body1"
+            color="textSecondary"
+            sx={{ py: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
+          >
             {ERROR_MESSAGES.NO_DISEASES}
           </Typography>
         ) : (
@@ -261,7 +321,11 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                       pr: 1,
                     }}
                   >
-                    <Typography variant="subtitle1" fontWeight="bold">
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      sx={{ fontSize: { xs: "0.9rem", lg: "1rem" } }}
+                    >
                       {disease.mkb10.name} ({disease.mkb10.code})
                     </Typography>
                     <Box onClick={(e) => e.stopPropagation()}>
@@ -284,13 +348,19 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails sx={{ borderTop: "1px dashed #e0e0e0" }}>
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 0.5, fontSize: { xs: "0.85rem", lg: "0.95rem" } }}
+                  >
                     <strong>Дата начала болезни:</strong>{" "}
                     {format(new Date(disease.startDate), "dd MMMM yyyy", {
                       locale: ru,
                     })}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 0.5, fontSize: { xs: "0.85rem", lg: "0.95rem" } }}
+                  >
                     <strong>Дата окончания болезни:</strong>{" "}
                     {disease.endDate
                       ? format(new Date(disease.endDate), "dd MMMM yyyy", {
@@ -298,11 +368,17 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                         })
                       : "Не указана"}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 0.5, fontSize: { xs: "0.85rem", lg: "0.95rem" } }}
+                  >
                     <strong>Назначения:</strong>{" "}
                     {disease.prescriptions || "Нет назначений"}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: { xs: "0.85rem", lg: "0.95rem" } }}
+                  >
                     <strong>Выдан лист нетрудоспособности:</strong>{" "}
                     {disease.sickLeaveIssued ? "Да" : "Нет"}
                   </Typography>
@@ -315,7 +391,10 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                   variant="outlined"
                   onClick={handleLoadMore}
                   disabled={diseasesLoading}
-                  sx={{ borderRadius: 2 }}
+                  sx={{
+                    borderRadius: 2,
+                    fontSize: { xs: "0.875rem", lg: "1rem" },
+                  }}
                 >
                   {diseasesLoading ? (
                     <CircularProgress size={24} />
@@ -329,7 +408,11 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
         )}
       </DialogContent>
       <DialogActions sx={{ pt: 2, pr: 3, pb: 2 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ borderRadius: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
+        >
           Закрыть
         </Button>
       </DialogActions>

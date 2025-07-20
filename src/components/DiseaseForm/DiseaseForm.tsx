@@ -223,16 +223,19 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
         display: "flex",
         flexDirection: "column",
         gap: 3,
-        p: 1,
+        p: { xs: 1, lg: 2 },
         width: "100%",
         "& .MuiOutlinedInput-root": {
           borderRadius: 2,
+          fontSize: { xs: "0.875rem", lg: "1rem" },
         },
         "& .MuiButton-root": {
           borderRadius: 2,
+          fontSize: { xs: "0.875rem", lg: "1rem" },
         },
         "& .MuiAlert-root": {
           borderRadius: 2,
+          fontSize: { xs: "0.875rem", lg: "1rem" },
         },
       }}
     >
@@ -285,6 +288,7 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
                     </>
                   ),
                 }}
+                sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
               />
             )}
           />
@@ -324,6 +328,7 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
                 required: true,
                 error: !!errors.startDate,
                 helperText: errors.startDate?.message,
+                sx: { fontSize: { xs: "0.875rem", lg: "1rem" } },
               },
             }}
           />
@@ -368,6 +373,7 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
                 fullWidth: true,
                 error: !!errors.endDate,
                 helperText: errors.endDate?.message,
+                sx: { fontSize: { xs: "0.875rem", lg: "1rem" } },
               },
             }}
           />
@@ -388,6 +394,7 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
         })}
         error={!!errors.prescriptions}
         helperText={errors.prescriptions?.message}
+        sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
       />
       <FormControlLabel
         control={
@@ -402,18 +409,20 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
             sx={{
               "& .MuiSvgIcon-root": {
                 borderRadius: 1,
+                fontSize: { xs: "1rem", lg: "1.25rem" },
               },
             }}
           />
         }
         label="Выдан лист нетрудоспособности"
+        sx={{ fontSize: { xs: "0.875rem", lg: "1rem" } }}
       />
       <Button
         type="submit"
         variant="contained"
         color="primary"
         fullWidth
-        sx={{ mt: 2 }}
+        sx={{ mt: 2, fontSize: { xs: "0.875rem", lg: "1rem" } }}
         disabled={isSubmitting || !isDirty || !formIsValid}
       >
         {isSubmitting ? <CircularProgress size={24} /> : "Сохранить"}
