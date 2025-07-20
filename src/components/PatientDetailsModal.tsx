@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -18,14 +18,15 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store/store";
-import { fetchPatientDiseases, deleteDisease } from "../store/diseaseSlice";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import type { Disease, Patient } from "../types";
 import { DeleteDialog, DiseaseModalForm } from ".";
 import { ERROR_MESSAGES } from "../utils/constants";
+import {
+  usePatientDiseasesData,
+  usePatientDiseaseDialogs,
+} from "../hooks/patient";
 
 interface PatientDetailsModalProps {
   open: boolean;
@@ -38,120 +39,36 @@ export const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
   onClose,
   patient,
 }) => {
-  const dispatch: AppDispatch = useDispatch<AppDispatch>();
   const {
     patientDiseases,
     diseasesLoading,
     diseasesError,
     diseasesCurrentPage,
     diseasesTotalPages,
-    paginationError,
-  } = useSelector((state: RootState) => state.diseases);
+    handleLoadMoreDiseases,
+    handleRefreshDiseases,
+    handleDeleteDisease,
+  } = usePatientDiseasesData(patient?.id, open);
 
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [selectedDiseaseId, setSelectedDiseaseId] = useState<number | null>(
-    null
-  );
-  const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
+  const {
+    openDeleteDialog,
+    setOpenDeleteDialog,
+    openEditDialog,
+    setOpenEditDialog,
+    openAddDialog,
+    setOpenAddDialog,
+    selectedDiseaseId,
+    selectedDisease,
+    handleDeleteClick,
+    handleEditClick,
+    handleAddClick,
+    handleDiseaseFormSubmitCallback,
+  } = usePatientDiseaseDialogs(handleRefreshDiseases);
 
-  useEffect(() => {
-    if (open && patient?.id) {
-      dispatch(
-        fetchPatientDiseases({
-          patientId: patient.id,
-          page: 0,
-          reset: true,
-        })
-      );
-    } else {
-      dispatch({ type: "diseases/resetState" });
-    }
-  }, [open, patient?.id, dispatch]);
-
-  const handleDeleteClick = (diseaseId: number): void => {
-    setSelectedDiseaseId(diseaseId);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleDeleteConfirm = async (): Promise<void> => {
-    if (selectedDiseaseId && patient?.id) {
-      try {
-        await dispatch(
-          deleteDisease({ patientId: patient.id, diseaseId: selectedDiseaseId })
-        ).unwrap();
-        dispatch(
-          fetchPatientDiseases({
-            patientId: patient.id,
-            page: 0,
-            reset: true,
-          })
-        );
-      } finally {
-        setOpenDeleteDialog(false);
-      }
-    }
-  };
-
-  const handleEditClick = (disease: Disease): void => {
-    setSelectedDisease(disease);
-    setOpenEditDialog(true);
-  };
-
-  const handleAddClick = (): void => {
-    setOpenAddDialog(true);
-  };
-
-  const handleLoadMore = (): void => {
-    if (patient?.id && diseasesCurrentPage < diseasesTotalPages - 1) {
-      dispatch(
-        fetchPatientDiseases({
-          patientId: patient.id,
-          page: diseasesCurrentPage + 1,
-          reset: false,
-        })
-      );
-    }
-  };
-
-  const handleRefreshDiseases = async (): Promise<void> => {
-    if (patient?.id) {
-      try {
-        if (paginationError) {
-          await dispatch(
-            fetchPatientDiseases({
-              patientId: patient.id,
-              page: diseasesCurrentPage + 1,
-              reset: false,
-            })
-          ).unwrap();
-        } else {
-          await dispatch(
-            fetchPatientDiseases({
-              patientId: patient.id,
-              page: 0,
-              reset: true,
-            })
-          ).unwrap();
-        }
-      } catch (error) {
-        console.error("Error refreshing diseases:", error);
-      }
-    }
-  };
-
-  const handleDiseaseFormSubmit = (): void => {
-    if (patient?.id) {
-      dispatch(
-        fetchPatientDiseases({
-          patientId: patient.id,
-          page: 0,
-          reset: true,
-        })
-      );
-      setOpenEditDialog(false);
-      setOpenAddDialog(false);
+  const handleDeleteConfirmAndCloseDialog = async (): Promise<void> => {
+    if (selectedDiseaseId) {
+      await handleDeleteDisease(selectedDiseaseId);
+      setOpenDeleteDialog(false);
     }
   };
 
@@ -274,7 +191,7 @@ export const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
           </Button>
         </Box>
 
-        {diseasesLoading && diseasesCurrentPage < 0 ? (
+        {diseasesLoading && patientDiseases.length === 0 ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
             <CircularProgress size={40} />
           </Box>
@@ -388,7 +305,7 @@ export const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                 <Button
                   variant="outlined"
-                  onClick={handleLoadMore}
+                  onClick={handleLoadMoreDiseases}
                   disabled={diseasesLoading}
                   sx={{
                     borderRadius: 2,
@@ -418,25 +335,27 @@ export const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
       <DeleteDialog
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleDeleteConfirmAndCloseDialog}
       />
-      {selectedDisease && (
+      {selectedDisease && patient?.id && (
         <DiseaseModalForm
           open={openEditDialog}
           onClose={() => setOpenEditDialog(false)}
-          onSubmit={handleDiseaseFormSubmit}
+          onSubmit={handleDiseaseFormSubmitCallback}
           patientId={patient.id}
           disease={selectedDisease}
           mode="edit"
         />
       )}
-      <DiseaseModalForm
-        open={openAddDialog}
-        onClose={() => setOpenAddDialog(false)}
-        onSubmit={handleDiseaseFormSubmit}
-        patientId={patient.id}
-        mode="add"
-      />
+      {patient?.id && (
+        <DiseaseModalForm
+          open={openAddDialog}
+          onClose={() => setOpenAddDialog(false)}
+          onSubmit={handleDiseaseFormSubmitCallback}
+          patientId={patient.id}
+          mode="add"
+        />
+      )}
     </Dialog>
   );
 };
