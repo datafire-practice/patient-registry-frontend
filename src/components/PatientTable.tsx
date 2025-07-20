@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "../../store/store";
+import type { RootState, AppDispatch } from "../store/store";
 import {
   fetchPatients,
   deletePatient,
@@ -9,7 +9,7 @@ import {
   clearError,
   resetPatientsState,
   setSelectedPatient,
-} from "../../store/patientSlice";
+} from "../store/patientSlice";
 import {
   Table,
   TableCell,
@@ -34,13 +34,11 @@ import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import DeleteDialog from "../DeleteDialog/DeleteDialog";
-import PatientDetailsModal from "../PatientDetailModal/PatientDetailsModal";
-import PatientModalForm from "../PatientModalForm/PatientModalForm";
-import type { PatientFormData, Patient } from "../../types/patient";
-import { PAGINATION } from "../../utils/constants";
+import { DeleteDialog, PatientModalForm, PatientDetailsModal } from ".";
+import type { PatientFormData, Patient } from "../types";
+import { PAGINATION } from "../utils/constants";
 
-const PatientTable: React.FC = () => {
+export const PatientTable: React.FC = () => {
   const dispatch: AppDispatch = useDispatch<AppDispatch>();
   const {
     patients,
@@ -573,5 +571,3 @@ const PatientTable: React.FC = () => {
     </Container>
   );
 };
-
-export default PatientTable;

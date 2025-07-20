@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import type {
-  Patient,
-  PatientFormData,
-  PatientsApiResponse,
-} from "../types/patient";
+import type { Patient, PatientFormData, PatientsApiResponse } from "../types";
 import type { AppDispatch } from "../store/store";
 import { API_ENDPOINTS, PAGINATION, ERROR_MESSAGES } from "../utils/constants";
 

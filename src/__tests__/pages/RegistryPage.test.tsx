@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import RegistryPage from "../../pages/RegistryPage";
-import PatientTable from "../../components/PatientTable/PatientTable";
+import { PatientTable } from "../../components";
 
 jest.mock("../../components/PatientTable/PatientTable", () => {
   return jest.fn(() => (

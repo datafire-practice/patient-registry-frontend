@@ -13,12 +13,8 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format, parseISO, isFuture, isBefore, isValid } from "date-fns";
-import {
-  API_ENDPOINTS,
-  PAGINATION,
-  ERROR_MESSAGES,
-} from "../../utils/constants";
-import { Disease, Mkb10DictionaryItem } from "../../types/patient";
+import { API_ENDPOINTS, PAGINATION, ERROR_MESSAGES } from "../utils/constants";
+import type { Disease, Mkb10DictionaryItem } from "../types";
 
 interface DiseaseFormProps {
   onSubmit: () => void;
@@ -39,7 +35,7 @@ interface ApiDiseaseRequest {
   sickLeaveIssued: boolean;
 }
 
-const DiseaseForm: React.FC<DiseaseFormProps> = ({
+export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   onSubmit,
   patientId,
   disease,
@@ -430,5 +426,3 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
     </Box>
   );
 };
-
-export default DiseaseForm;

@@ -5,8 +5,8 @@ import "@testing-library/jest-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ru } from "date-fns/locale";
-import PatientModalForm from "../../components/PatientModalForm/PatientModalForm";
-import type { PatientFormData } from "../../types/patient";
+import { PatientModalForm } from "../../components";
+import type { PatientFormData } from "../../types";
 
 describe("PatientModalForm", () => {
   const mockSubmit = jest.fn();

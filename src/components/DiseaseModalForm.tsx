@@ -6,8 +6,8 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import type { Disease } from "../../types/patient";
-import DiseaseForm from "../DiseaseForm/DiseaseForm";
+import type { Disease } from "../types";
+import { DiseaseForm } from ".";
 
 interface DiseaseModalFormProps {
   open: boolean;
@@ -18,7 +18,7 @@ interface DiseaseModalFormProps {
   mode: "add" | "edit";
 }
 
-const DiseaseModalForm: React.FC<DiseaseModalFormProps> = ({
+export const DiseaseModalForm: React.FC<DiseaseModalFormProps> = ({
   open,
   onClose,
   onSubmit,
@@ -69,5 +69,3 @@ const DiseaseModalForm: React.FC<DiseaseModalFormProps> = ({
     </Dialog>
   );
 };
-
-export default DiseaseModalForm;

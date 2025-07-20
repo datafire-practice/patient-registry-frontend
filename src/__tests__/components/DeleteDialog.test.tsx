@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import DeleteDialog from "../../components/DeleteDialog/DeleteDialog";
+import { DeleteDialog } from "../../components";
 
 describe("DeleteDialog", () => {
   const mockOnClose = jest.fn();

@@ -19,14 +19,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../store/store";
-import { fetchPatientDiseases, deleteDisease } from "../../store/diseaseSlice";
+import { AppDispatch, RootState } from "../store/store";
+import { fetchPatientDiseases, deleteDisease } from "../store/diseaseSlice";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import type { Disease, Patient } from "../../types/patient";
-import DeleteDialog from "../DeleteDialog/DeleteDialog";
-import DiseaseModalForm from "../DiseaseModalForm/DiseaseModalForm";
-import { ERROR_MESSAGES } from "../../utils/constants";
+import type { Disease, Patient } from "../types";
+import { DeleteDialog, DiseaseModalForm } from ".";
+import { ERROR_MESSAGES } from "../utils/constants";
 
 interface PatientDetailsModalProps {
   open: boolean;
@@ -34,7 +33,7 @@ interface PatientDetailsModalProps {
   patient: Patient | null;
 }
 
-const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
+export const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
   open,
   onClose,
   patient,
@@ -441,5 +440,3 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
     </Dialog>
   );
 };
-
-export default PatientDetailsModal;

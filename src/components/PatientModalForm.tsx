@@ -6,8 +6,8 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import PatientForm from "../PatientForm/PatientForm";
-import type { PatientFormData } from "../../types/patient";
+import { PatientForm } from ".";
+import type { PatientFormData } from "../types";
 
 interface PatientModalFormProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface PatientModalFormProps {
   title: string;
 }
 
-const PatientModalForm: React.FC<PatientModalFormProps> = ({
+export const PatientModalForm: React.FC<PatientModalFormProps> = ({
   open,
   onClose,
   onSubmit,
@@ -41,5 +41,3 @@ const PatientModalForm: React.FC<PatientModalFormProps> = ({
     </Dialog>
   );
 };
-
-export default PatientModalForm;

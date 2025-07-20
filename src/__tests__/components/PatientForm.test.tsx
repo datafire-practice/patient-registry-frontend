@@ -2,8 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import PatientForm from "../../components/PatientForm/PatientForm";
-import type { PatientFormData } from "../../types/patient";
+import { PatientForm } from "../../components";
+import type { PatientFormData } from "../../types";
 
 describe("PatientForm", (): void => {
   const mockOnSubmit: (data: PatientFormData) => void = jest.fn();

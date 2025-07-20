@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import type { PatientFormData } from "../../types/patient";
+import type { PatientFormData } from "../types";
 import {
   TextField,
   Button,
@@ -20,7 +20,7 @@ interface PatientFormProps {
   defaultValues?: PatientFormData;
 }
 
-const PatientForm: React.FC<PatientFormProps> = ({
+export const PatientForm: React.FC<PatientFormProps> = ({
   onSubmit,
   defaultValues,
 }) => {
@@ -220,5 +220,3 @@ const PatientForm: React.FC<PatientFormProps> = ({
     </Box>
   );
 };
-
-export default PatientForm;

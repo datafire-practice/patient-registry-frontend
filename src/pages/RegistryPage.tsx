@@ -1,5 +1,5 @@
 import React from "react";
-import PatientTable from "../components/PatientTable/PatientTable";
+import { PatientTable } from "../components";
 
 const RegistryPage: React.FC = () => {
   return (

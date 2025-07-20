@@ -14,7 +14,7 @@ interface DeleteDialogProps {
   onConfirm: () => void;
 }
 
-const DeleteDialog: React.FC<DeleteDialogProps> = ({
+export const DeleteDialog: React.FC<DeleteDialogProps> = ({
   open,
   onClose,
   onConfirm,
@@ -60,5 +60,3 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
     </Dialog>
   );
 };
-
-export default DeleteDialog;
