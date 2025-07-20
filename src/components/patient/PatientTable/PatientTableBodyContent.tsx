@@ -7,7 +7,7 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
-import type { Patient } from "../../types";
+import type { Patient } from "../../../types";
 import { PatientTableRow } from "./PatientTableRow";
 
 interface PatientTableBodyContentProps {

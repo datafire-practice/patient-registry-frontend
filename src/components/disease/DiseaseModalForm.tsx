@@ -6,8 +6,8 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import type { Disease } from "../types";
-import { DiseaseForm } from ".";
+import type { Disease } from "../../types";
+import { DiseaseForm } from "..";
 
 interface DiseaseModalFormProps {
   open: boolean;

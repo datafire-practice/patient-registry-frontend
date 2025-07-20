@@ -18,19 +18,15 @@ import {
   usePatientData,
   usePatientActions,
   usePatientDialog,
-} from "../../hooks/patient";
-import type { Patient, PatientFormData } from "../../types";
-import {
-  DeleteDialog,
-  PatientModalForm,
-  PatientDetailsModal,
-} from "../../components";
+} from "../../../hooks/patient";
+import type { Patient, PatientFormData } from "../../../types";
+import { DeleteDialog, PatientModalForm, PatientDetailsModal } from "../..";
 import {
   PatientTableHead,
   PatientTableBodyContent,
   PatientTableErrorState,
   GlobalLoadingIndicator,
-} from "../PatientTable";
+} from ".";
 
 export const PatientTable: React.FC = () => {
   const {

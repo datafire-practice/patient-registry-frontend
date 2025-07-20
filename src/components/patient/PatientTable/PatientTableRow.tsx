@@ -4,7 +4,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import type { Patient } from "../../types";
+import type { Patient } from "../../../types";
 
 interface PatientTableRowProps {
   patient: Patient;

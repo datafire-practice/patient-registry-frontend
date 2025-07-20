@@ -20,13 +20,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import type { Disease, Patient } from "../types";
-import { DeleteDialog, DiseaseModalForm } from ".";
-import { ERROR_MESSAGES } from "../utils/constants";
+import type { Disease, Patient } from "../../types";
+import { DeleteDialog, DiseaseModalForm } from "..";
+import { ERROR_MESSAGES } from "../../utils/constants";
 import {
   usePatientDiseasesData,
   usePatientDiseaseDialogs,
-} from "../hooks/patient";
+} from "../../hooks/patient";
 
 interface PatientDetailsModalProps {
   open: boolean;

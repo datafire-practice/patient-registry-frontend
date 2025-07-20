@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import type { PatientFormData } from "../types";
+import type { PatientFormData } from "../../types";
 import {
   TextField,
   Button,
