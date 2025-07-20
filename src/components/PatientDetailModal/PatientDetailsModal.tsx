@@ -1,0 +1,345 @@
+import React, { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Link,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store/store";
+import { fetchPatientDiseases, deleteDisease } from "../../store/diseaseSlice";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+import type { Disease, Patient } from "../../types/patient";
+import DeleteDialog from "../DeleteDialog/DeleteDialog";
+import DiseaseModalForm from "../DiseaseModalForm/DiseaseModalForm";
+import { ERROR_MESSAGES } from "../../utils/constants";
+
+interface PatientDetailsModalProps {
+  open: boolean;
+  onClose: () => void;
+  patient: Patient | null;
+}
+
+const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
+  open,
+  onClose,
+  patient,
+}) => {
+  const dispatch: AppDispatch = useDispatch<AppDispatch>();
+  const {
+    patientDiseases,
+    diseasesLoading,
+    diseasesError,
+    diseasesCurrentPage,
+    diseasesTotalPages,
+    paginationError,
+  } = useSelector((state: RootState) => state.diseases);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [selectedDiseaseId, setSelectedDiseaseId] = useState<number | null>(
+    null
+  );
+  const [selectedDisease, setSelectedDisease] = useState<Disease | null>(null);
+
+  useEffect(() => {
+    if (open && patient?.id) {
+      dispatch(
+        fetchPatientDiseases({
+          patientId: patient.id,
+          page: 0,
+          reset: true,
+        })
+      );
+    } else {
+      dispatch({ type: "diseases/resetState" });
+    }
+  }, [open, patient?.id, dispatch]);
+
+  const handleDeleteClick = (diseaseId: number): void => {
+    setSelectedDiseaseId(diseaseId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async (): Promise<void> => {
+    if (selectedDiseaseId && patient?.id) {
+      try {
+        await dispatch(
+          deleteDisease({ patientId: patient.id, diseaseId: selectedDiseaseId })
+        ).unwrap();
+        dispatch(
+          fetchPatientDiseases({
+            patientId: patient.id,
+            page: 0,
+            reset: true,
+          })
+        );
+      } finally {
+        setOpenDeleteDialog(false);
+      }
+    }
+  };
+
+  const handleEditClick = (disease: Disease): void => {
+    setSelectedDisease(disease);
+    setOpenEditDialog(true);
+  };
+
+  const handleAddClick = (): void => {
+    setOpenAddDialog(true);
+  };
+
+  const handleLoadMore = (): void => {
+    if (patient?.id && diseasesCurrentPage < diseasesTotalPages - 1) {
+      dispatch(
+        fetchPatientDiseases({
+          patientId: patient.id,
+          page: diseasesCurrentPage + 1,
+          reset: false,
+        })
+      );
+    }
+  };
+
+  const handleRefreshDiseases = async (): Promise<void> => {
+    if (patient?.id) {
+      try {
+        if (paginationError) {
+          await dispatch(
+            fetchPatientDiseases({
+              patientId: patient.id,
+              page: diseasesCurrentPage + 1,
+              reset: false,
+            })
+          ).unwrap();
+        } else {
+          await dispatch(
+            fetchPatientDiseases({
+              patientId: patient.id,
+              page: 0,
+              reset: true,
+            })
+          ).unwrap();
+        }
+      } catch (error) {
+        console.error("Error refreshing diseases:", error);
+      }
+    }
+  };
+
+  const handleDiseaseFormSubmit = (): void => {
+    if (patient?.id) {
+      dispatch(
+        fetchPatientDiseases({
+          patientId: patient.id,
+          page: 0,
+          reset: true,
+        })
+      );
+      setOpenEditDialog(false);
+      setOpenAddDialog(false);
+    }
+  };
+
+  if (!patient) {
+    return null;
+  }
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>Детальная информация о пациенте</DialogTitle>
+      <DialogContent dividers>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            ФИО:{" "}
+            <Typography component="span" variant="body1">
+              {`${patient.lastName} ${patient.firstName} ${
+                patient.middleName || ""
+              }`}
+            </Typography>
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            Пол:{" "}
+            <Typography component="span" variant="body1">
+              {patient.gender === "М" ? "Мужской" : "Женский"}
+            </Typography>
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            Дата рождения:{" "}
+            <Typography component="span" variant="body1">
+              {format(new Date(patient.birthDate), "dd MMMM yyyy", {
+                locale: ru,
+              })}
+            </Typography>
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            Номер полиса ОМС:{" "}
+            <Typography component="span" variant="body1">
+              {patient.insuranceNumber}
+            </Typography>
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h5">Заболевания:</Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddClick}
+          >
+            Добавить заболевание
+          </Button>
+        </Box>
+
+        {diseasesLoading && diseasesCurrentPage < 0 ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+            <CircularProgress />
+          </Box>
+        ) : diseasesError ? (
+          <Box sx={{ textAlign: "center", py: 2 }}>
+            <Typography color="error">
+              {diseasesError.split("Обновить")[0]}
+              <Link
+                component="button"
+                onClick={handleRefreshDiseases}
+                sx={{ ml: 1, textDecoration: "underline" }}
+              >
+                Обновить
+              </Link>
+            </Typography>
+          </Box>
+        ) : patientDiseases.length === 0 ? (
+          <Typography variant="body1" color="textSecondary">
+            {ERROR_MESSAGES.NO_DISEASES}
+          </Typography>
+        ) : (
+          <>
+            {patientDiseases.map((disease: Disease) => (
+              <Accordion key={disease.id} sx={{ mb: 1 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {disease.mkb10.name} ({disease.mkb10.code})
+                    </Typography>
+                    <Box onClick={(e) => e.stopPropagation()}>
+                      <IconButton
+                        onClick={() => handleEditClick(disease)}
+                        aria-label="Редактировать заболевание"
+                        size="small"
+                        sx={{ mr: 1 }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => handleDeleteClick(disease.id)}
+                        aria-label="Удалить заболевание"
+                        size="small"
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography>
+                    <strong>Дата начала болезни:</strong>{" "}
+                    {format(new Date(disease.startDate), "dd MMMM yyyy", {
+                      locale: ru,
+                    })}
+                  </Typography>
+                  <Typography>
+                    <strong>Дата окончания болезни:</strong>{" "}
+                    {disease.endDate
+                      ? format(new Date(disease.endDate), "dd MMMM yyyy", {
+                          locale: ru,
+                        })
+                      : "Не указана"}
+                  </Typography>
+                  <Typography>
+                    <strong>Назначения:</strong>{" "}
+                    {disease.prescriptions || "Нет назначений"}
+                  </Typography>
+                  <Typography>
+                    <strong>Выдан лист нетрудоспособности:</strong>{" "}
+                    {disease.sickLeaveIssued ? "Да" : "Нет"}
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+            {diseasesCurrentPage < diseasesTotalPages - 1 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleLoadMore}
+                  disabled={diseasesLoading}
+                >
+                  {diseasesLoading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    "Показать еще"
+                  )}
+                </Button>
+              </Box>
+            )}
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Закрыть</Button>
+      </DialogActions>
+      <DeleteDialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+      />
+      {selectedDisease && (
+        <DiseaseModalForm
+          open={openEditDialog}
+          onClose={() => setOpenEditDialog(false)}
+          onSubmit={handleDiseaseFormSubmit}
+          patientId={patient.id}
+          disease={selectedDisease}
+          mode="edit"
+        />
+      )}
+      <DiseaseModalForm
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        onSubmit={handleDiseaseFormSubmit}
+        patientId={patient.id}
+        mode="add"
+      />
+    </Dialog>
+  );
+};
+
+export default PatientDetailsModal;

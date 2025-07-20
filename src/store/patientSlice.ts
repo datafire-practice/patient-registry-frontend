@@ -18,6 +18,7 @@ export interface PatientState {
   lastLoadedPageSize: number;
   paginationError: boolean;
   nextPageToLoad: number;
+  selectedPatient: Patient | null;
 }
 
 const initialState: PatientState = {
@@ -30,6 +31,7 @@ const initialState: PatientState = {
   lastLoadedPageSize: 0,
   paginationError: false,
   nextPageToLoad: 0,
+  selectedPatient: null,
 };
 
 export const fetchPatients = createAsyncThunk<
@@ -57,6 +59,9 @@ export const fetchPatients = createAsyncThunk<
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (!error.response || error.code === "ECONNABORTED") {
+          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+        }
         return rejectWithValue(
           error.response?.data?.message || ERROR_MESSAGES.FETCH_ERROR
         );
@@ -77,17 +82,14 @@ export const deletePatient = createAsyncThunk<
     return id;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      if (!error.response && error.code === "ECONNABORTED") {
-        return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-      }
-      if (!error.response) {
+      if (!error.response || error.code === "ECONNABORTED") {
         return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
       }
       return rejectWithValue(
         error.response?.data?.message || ERROR_MESSAGES.DELETE_ERROR
       );
     }
-    return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+    return rejectWithValue(ERROR_MESSAGES.UNKNOWN_ERROR);
   }
 });
 
@@ -109,17 +111,14 @@ export const createPatient = createAsyncThunk<
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (!error.response && error.code === "ECONNABORTED") {
-          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-        }
-        if (!error.response) {
+        if (!error.response || error.code === "ECONNABORTED") {
           return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
         }
         return rejectWithValue(
           error.response?.data?.message || ERROR_MESSAGES.CREATE_ERROR
         );
       }
-      return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+      return rejectWithValue(ERROR_MESSAGES.UNKNOWN_ERROR);
     }
   }
 );
@@ -142,17 +141,14 @@ export const updatePatient = createAsyncThunk<
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (!error.response && error.code === "ECONNABORTED") {
-          return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-        }
-        if (!error.response) {
+        if (!error.response || error.code === "ECONNABORTED") {
           return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
         }
         return rejectWithValue(
           error.response?.data?.message || ERROR_MESSAGES.UPDATE_ERROR
         );
       }
-      return rejectWithValue(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
+      return rejectWithValue(ERROR_MESSAGES.UNKNOWN_ERROR);
     }
   }
 );
@@ -173,6 +169,13 @@ const patientSlice = createSlice({
       state.paginationError = false;
       state.nextPageToLoad = 0;
       state.error = null;
+      state.selectedPatient = null;
+    },
+    setSelectedPatient(
+      state: PatientState,
+      action: PayloadAction<Patient | null>
+    ): void {
+      state.selectedPatient = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -190,9 +193,9 @@ const patientSlice = createSlice({
           );
           state.patients.push(...newPatients);
         }
-        state.currentPage = action.payload.page.number;
-        state.totalPages = action.payload.page.totalPages;
-        state.totalElements = action.payload.page.totalElements;
+        state.currentPage = action.payload.number;
+        state.totalPages = action.payload.totalPages;
+        state.totalElements = action.payload.totalElements;
         state.lastLoadedPageSize = action.payload.content.length;
         state.loading = false;
         state.error = null;
@@ -251,5 +254,6 @@ const patientSlice = createSlice({
   },
 });
 
-export const { clearError, resetPatientsState } = patientSlice.actions;
+export const { clearError, resetPatientsState, setSelectedPatient } =
+  patientSlice.actions;
 export default patientSlice.reducer;

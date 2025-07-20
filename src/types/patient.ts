@@ -20,7 +20,6 @@ export interface Patient {
   gender: "М" | "Ж";
   birthDate: string;
   insuranceNumber: string;
-  diseases?: Disease[];
 }
 
 export interface PatientFormData {
@@ -32,14 +31,45 @@ export interface PatientFormData {
   insuranceNumber: string;
 }
 
-export interface PageInfo {
-  size: number;
+export interface PatientsApiResponse {
+  content: Patient[];
   number: number;
+  size: number;
   totalElements: number;
   totalPages: number;
 }
 
-export interface PatientsApiResponse {
-  content: Patient[];
-  page: PageInfo;
+export interface DiseasesApiResponse {
+  content: Disease[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface DiseaseFormData {
+  patient: {
+    id: number;
+  };
+  mkb10: {
+    code: string;
+    name: string;
+  };
+  startDate: string;
+  endDate?: string | null;
+  prescriptions: string;
+  sickLeaveIssued: boolean;
+}
+
+export interface Mkb10DictionaryItem {
+  code: string;
+  name: string;
+}
+
+export interface Mkb10DictionaryResponse {
+  content: Mkb10DictionaryItem[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
 }

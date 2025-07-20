@@ -8,6 +8,7 @@ import {
   updatePatient,
   clearError,
   resetPatientsState,
+  setSelectedPatient,
 } from "../../store/patientSlice";
 import {
   Table,
@@ -31,6 +32,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import DeleteDialog from "../DeleteDialog/DeleteDialog";
+import PatientDetailsModal from "../PatientDetailModal/PatientDetailsModal";
 import PatientModalForm from "../PatientModalForm/PatientModalForm";
 import type { PatientFormData, Patient } from "../../types/patient";
 import {
@@ -51,16 +53,23 @@ import { PAGINATION } from "../../utils/constants";
 
 const PatientTable: React.FC = () => {
   const dispatch: AppDispatch = useDispatch<AppDispatch>();
-  const { patients, loading, error, totalElements, paginationError } =
-    useSelector((state: RootState) => state.patients);
+  const {
+    patients,
+    loading,
+    error,
+    totalElements,
+    paginationError,
+    selectedPatient,
+  } = useSelector((state: RootState) => state.patients);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
   const [openCreateDialog, setOpenCreateDialog] = useState<boolean>(false);
+  const [openDetailsModal, setOpenDetailsModal] = useState<boolean>(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
     null
   );
-  const [selectedPatient, setSelectedPatient] =
+  const [patientFormDataForEdit, setPatientFormDataForEdit] =
     useState<PatientFormData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -132,7 +141,7 @@ const PatientTable: React.FC = () => {
   };
 
   const handleEditClick = (patient: Patient): void => {
-    setSelectedPatient({
+    setPatientFormDataForEdit({
       lastName: patient.lastName,
       firstName: patient.firstName,
       middleName: patient.middleName || "",
@@ -145,7 +154,7 @@ const PatientTable: React.FC = () => {
   };
 
   const handleCreateClick = (): void => {
-    setSelectedPatient(null);
+    setPatientFormDataForEdit(null);
     setSelectedPatientId(null);
     setOpenCreateDialog(true);
   };
@@ -197,6 +206,16 @@ const PatientTable: React.FC = () => {
 
   const handleCloseErrorSnackbar = (): void => {
     dispatch(clearError());
+  };
+
+  const handleRowClick = (patient: Patient): void => {
+    dispatch(setSelectedPatient(patient));
+    setOpenDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = (): void => {
+    setOpenDetailsModal(false);
+    dispatch(setSelectedPatient(null));
   };
 
   if (error && (patients.length === 0 || paginationError) && !loading) {
@@ -281,7 +300,12 @@ const PatientTable: React.FC = () => {
                 </TableRow>
               ) : (
                 patients.map((patient: Patient) => (
-                  <TableRow key={patient.id} hover>
+                  <TableRow
+                    key={patient.id}
+                    hover
+                    onClick={() => handleRowClick(patient)}
+                    sx={{ cursor: "pointer" }}
+                  >
                     <NameTableCell>
                       {`${patient.lastName} ${patient.firstName} ${
                         patient.middleName || ""
@@ -296,7 +320,7 @@ const PatientTable: React.FC = () => {
                         locale: ru,
                       })}
                     </BodyTableCell>
-                    <BodyTableCell>
+                    <BodyTableCell onClick={(e) => e.stopPropagation()}>
                       <IconButton
                         onClick={(): void => handleEditClick(patient)}
                         aria-label={`Редактировать пациента ${patient.lastName}`}
@@ -359,7 +383,7 @@ const PatientTable: React.FC = () => {
         open={openEditDialog}
         onClose={(): void => setOpenEditDialog(false)}
         onSubmit={handleSubmitForm}
-        defaultValues={selectedPatient}
+        defaultValues={patientFormDataForEdit}
         title="Редактирование пациента"
       />
       <PatientModalForm
@@ -367,6 +391,12 @@ const PatientTable: React.FC = () => {
         onClose={(): void => setOpenCreateDialog(false)}
         onSubmit={handleSubmitForm}
         title="Добавление нового пациента"
+      />
+
+      <PatientDetailsModal
+        open={openDetailsModal}
+        onClose={handleCloseDetailsModal}
+        patient={selectedPatient}
       />
     </Container>
   );

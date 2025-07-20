@@ -6,12 +6,5 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    proxy: {
-      "/api": {
-        target: "http://host.docker.internal:8080",
-        changeOrigin: true,
-        rewrite: (path: string): string => path.replace(/^\/api/, ""),
-      },
-    },
   },
 });
