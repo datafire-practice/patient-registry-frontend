@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import axios from "axios";
 import {
   TextField,
   Button,
@@ -13,8 +12,8 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format, parseISO, isFuture, isBefore, isValid } from "date-fns";
-import { API_ENDPOINTS, PAGINATION, ERROR_MESSAGES } from "../utils/constants";
 import type { Disease, Mkb10DictionaryItem } from "../types";
+import { useMkb10Search, useDiseaseFormSubmit } from "../hooks/disease";
 
 interface DiseaseFormProps {
   onSubmit: () => void;
@@ -24,10 +23,7 @@ interface DiseaseFormProps {
   onClose: () => void;
 }
 
-interface ApiDiseaseRequest {
-  patient: {
-    id: number;
-  };
+interface FormData {
   mkb10: Mkb10DictionaryItem;
   startDate: string;
   endDate: string | null;
@@ -42,15 +38,23 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   mode,
   onClose,
 }) => {
-  const [mkb10Options, setMkb10Options] = useState<Mkb10DictionaryItem[]>([]);
-  const [loadingMkb10, setLoadingMkb10] = useState(false);
-  const [mkb10Page, setMkb10Page] = useState(0);
-  const [hasMoreMkb10, setHasMoreMkb10] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const listboxRef = useRef<HTMLUListElement>(null);
-  const scrollPositionRef = useRef(0);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const {
+    mkb10Options,
+    loadingMkb10,
+    mkb10Error,
+    listboxRef,
+    handleScroll,
+    handleSearchChange,
+    handleAutocompleteOpen,
+    resetMkb10Search,
+  } = useMkb10Search();
+
+  const {
+    submissionError,
+    isSubmitting,
+    handleFormSubmit: handleActualFormSubmit,
+    clearSubmissionError,
+  } = useDiseaseFormSubmit(onSubmit, onClose);
 
   const {
     register,
@@ -58,10 +62,10 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
     setValue,
     watch,
     control,
-    formState: { errors, isSubmitting, isDirty, isValid: formIsValid },
-  } = useForm<ApiDiseaseRequest>({
+    formState: { errors, isDirty, isValid: formIsValid },
+    reset,
+  } = useForm<FormData>({
     defaultValues: {
-      patient: { id: patientId },
       mkb10: disease?.mkb10 || { code: "", name: "" },
       startDate: disease?.startDate || format(new Date(), "yyyy-MM-dd"),
       endDate: disease?.endDate ?? null,
@@ -71,150 +75,42 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
     mode: "onBlur",
   });
 
-  const fetchMkb10 = useCallback(
-    async (
-      page: number,
-      search: string = "",
-      reset: boolean = false
-    ): Promise<void> => {
-      setLoadingMkb10(true);
-      try {
-        const url = `${API_ENDPOINTS.MKB10_DICTIONARY}?page=${page}&size=${
-          PAGINATION.MKB10_PAGE_SIZE
-        }${search ? `&search=${encodeURIComponent(search)}` : ""}`;
-
-        const response = await axios.get(url);
-
-        if (reset || page === 0) {
-          setMkb10Options(response.data.content);
-        } else {
-          setMkb10Options((prev) => [...prev, ...response.data.content]);
-        }
-
-        setHasMoreMkb10(
-          (page + 1) * PAGINATION.MKB10_PAGE_SIZE < response.data.totalElements
-        );
-      } catch (error) {
-        console.error("Error fetching MKB10 dictionary:", error);
-        if (axios.isAxiosError(error)) {
-          if (error.code === "ERR_NETWORK" || error.response?.status === 503) {
-            setError(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-          } else {
-            setError(
-              error.response?.data?.message || ERROR_MESSAGES.UNKNOWN_ERROR
-            );
-          }
-        } else {
-          setError(ERROR_MESSAGES.UNKNOWN_ERROR);
-        }
-      } finally {
-        setLoadingMkb10(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    fetchMkb10(0, "", true);
-  }, [fetchMkb10]);
-
-  useEffect(() => {
-    if (
-      !loadingMkb10 &&
-      listboxRef.current &&
-      scrollPositionRef.current !== 0
-    ) {
-      listboxRef.current.scrollTop = scrollPositionRef.current;
-      scrollPositionRef.current = 0;
+  useEffect((): void => {
+    if (disease) {
+      reset({
+        mkb10: disease.mkb10,
+        startDate: disease.startDate,
+        endDate: disease.endDate ?? null,
+        prescriptions: disease.prescriptions,
+        sickLeaveIssued: disease.sickLeaveIssued,
+      });
+      resetMkb10Search();
+    } else {
+      reset({
+        mkb10: { code: "", name: "" },
+        startDate: format(new Date(), "yyyy-MM-dd"),
+        endDate: null,
+        prescriptions: "",
+        sickLeaveIssued: false,
+      });
+      resetMkb10Search();
     }
-  }, [loadingMkb10, mkb10Options]);
-
-  const handleScroll = (event: React.SyntheticEvent<Element, Event>): void => {
-    const listboxNode = event.currentTarget as HTMLUListElement;
-    if (
-      listboxNode.scrollTop + listboxNode.clientHeight >=
-        listboxNode.scrollHeight - 5 &&
-      !loadingMkb10 &&
-      hasMoreMkb10
-    ) {
-      scrollPositionRef.current = listboxNode.scrollTop;
-      const nextPage = mkb10Page + 1;
-      setMkb10Page(nextPage);
-      fetchMkb10(nextPage, searchQuery);
-    }
-  };
-
-  const handleSearchChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: string
-  ): void => {
-    setSearchQuery(value);
-
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      setMkb10Page(0);
-      fetchMkb10(0, value, true);
-    }, 300);
-  };
-
-  const handleAutocompleteOpen = (): void => {
-    if (mkb10Options.length === 0 || (mkb10Page === 0 && !searchQuery)) {
-      fetchMkb10(0, searchQuery, true);
-    }
-  };
-
-  const handleFormSubmit = async (data: ApiDiseaseRequest): Promise<void> => {
-    setError(null);
-    try {
-      if (!patientId) {
-        throw new Error("Patient ID is missing");
-      }
-
-      const requestData = {
-        ...data,
-        endDate: data.endDate === "" ? null : data.endDate,
-      };
-
-      if (mode === "edit" && disease?.id) {
-        await axios.put(
-          `${API_ENDPOINTS.DISEASE(patientId, disease.id)}`,
-          requestData
-        );
-      } else {
-        await axios.post(
-          API_ENDPOINTS.PATIENT_DISEASES(patientId),
-          requestData
-        );
-      }
-      onSubmit();
-      onClose();
-    } catch (error) {
-      console.error("Ошибка при сохранении заболевания:", error);
-      if (axios.isAxiosError(error)) {
-        if (!error.response && error.code === "ECONNABORTED") {
-          setError(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-        } else if (!error.response) {
-          setError(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
-        } else {
-          setError(
-            error.response?.data?.message || ERROR_MESSAGES.UNKNOWN_ERROR
-          );
-        }
-      } else {
-        setError(ERROR_MESSAGES.UNKNOWN_ERROR);
-      }
-    }
-  };
+    clearSubmissionError();
+  }, [disease, reset, resetMkb10Search, clearSubmissionError]);
 
   const values = watch();
 
   return (
     <Box
       component="form"
-      onSubmit={handleSubmit(handleFormSubmit)}
+      onSubmit={handleSubmit((data) =>
+        handleActualFormSubmit(
+          { ...data, patient: { id: patientId } },
+          patientId,
+          mode,
+          disease?.id
+        )
+      )}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -235,9 +131,9 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
         },
       }}
     >
-      {error && (
+      {(mkb10Error || submissionError) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          {mkb10Error || submissionError}
         </Alert>
       )}
 
@@ -256,8 +152,6 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
             onOpen={handleAutocompleteOpen}
             onChange={(_, newValue) => {
               field.onChange(newValue);
-              setSearchQuery("");
-              setMkb10Page(0);
             }}
             value={field.value || null}
             ListboxProps={{

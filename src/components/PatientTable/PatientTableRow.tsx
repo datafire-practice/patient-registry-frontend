@@ -62,7 +62,7 @@ export const PatientTableRow: React.FC<PatientTableRowProps> = ({
         {format(new Date(patient.birthDate), "dd MMMM yyyy", { locale: ru })}
       </TableCell>
       <TableCell
-        onClick={(e) => e.stopPropagation()} // Предотвращаем срабатывание onClick на Row
+        onClick={(e) => e.stopPropagation()}
         sx={{
           padding: { xs: "8px 12px", lg: "12px 16px" },
         }}

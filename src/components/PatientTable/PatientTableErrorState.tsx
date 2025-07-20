@@ -1,4 +1,3 @@
-// src/components/PatientTable/PatientTableErrorState.tsx
 import React from "react";
 import { Container, Box, Typography, Link } from "@mui/material";
 

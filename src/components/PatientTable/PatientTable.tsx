@@ -105,7 +105,6 @@ export const PatientTable: React.FC = () => {
     handleDialogCloseDetailsModal();
   };
 
-  // Display error state if no data is loaded or pagination error occurs
   if (error && (patients.length === 0 || paginationError) && !loading) {
     return (
       <PatientTableErrorState error={error} onRefresh={handleRefreshClick} />
