@@ -71,6 +71,12 @@ const PatientForm: React.FC<PatientFormProps> = ({
         gap: 3,
         p: 1,
         width: "100%",
+        "& .MuiOutlinedInput-root": {
+          borderRadius: 2,
+        },
+        "& .MuiButton-root": {
+          borderRadius: 2,
+        },
       }}
     >
       <Box

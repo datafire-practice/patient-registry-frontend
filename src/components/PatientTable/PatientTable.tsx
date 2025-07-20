@@ -24,6 +24,9 @@ import {
   CircularProgress,
   Box,
   Link,
+  TableContainer,
+  Paper,
+  Fab,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -35,19 +38,6 @@ import DeleteDialog from "../DeleteDialog/DeleteDialog";
 import PatientDetailsModal from "../PatientDetailModal/PatientDetailsModal";
 import PatientModalForm from "../PatientModalForm/PatientModalForm";
 import type { PatientFormData, Patient } from "../../types/patient";
-import {
-  StyledTableContainer,
-  HeaderTableCell,
-  FooterContainer,
-  RecordsCounter,
-  FabContainer,
-  NameTableCell,
-  BodyTableCell,
-  ErrorContainer,
-  EmptyStateContainer,
-  StyledPaper,
-  StyledFab,
-} from "./patientTable.styles";
 
 import { PAGINATION } from "../../utils/constants";
 
@@ -221,7 +211,16 @@ const PatientTable: React.FC = () => {
   if (error && (patients.length === 0 || paginationError) && !loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
-        <ErrorContainer>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "200px",
+            gap: "16px",
+          }}
+        >
           <Typography variant="h6" color="error">
             {error.split("Обновить")[0]}
             <Link
@@ -233,7 +232,7 @@ const PatientTable: React.FC = () => {
               Обновить
             </Link>
           </Typography>
-        </ErrorContainer>
+        </Box>
       </Container>
     );
   }
@@ -275,27 +274,105 @@ const PatientTable: React.FC = () => {
         </Alert>
       </Snackbar>
 
-      <StyledPaper elevation={3}>
-        <StyledTableContainer ref={tableContainerRef}>
+      <Paper
+        elevation={3}
+        sx={{
+          borderRadius: 4,
+        }}
+      >
+        <TableContainer
+          ref={tableContainerRef}
+          sx={{
+            overflow: "auto",
+            borderRadius: "8px",
+            maxHeight: "calc(100vh - 120px)",
+            scrollBehavior: "smooth",
+            "&::-webkit-scrollbar": { width: "6px" },
+            "&::-webkit-scrollbar-track": { background: "#f1f1f1" },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#888",
+              borderRadius: "6px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": { background: "#555" },
+          }}
+        >
           <Table stickyHeader size="medium">
             <TableHead>
               <TableRow>
-                <HeaderTableCell>ФИО</HeaderTableCell>
-                <HeaderTableCell>Номер полиса</HeaderTableCell>
-                <HeaderTableCell>Пол</HeaderTableCell>
-                <HeaderTableCell>Дата рождения</HeaderTableCell>
-                <HeaderTableCell>Действия</HeaderTableCell>
+                <TableCell
+                  sx={{
+                    background: "#f5f5f5",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    padding: "14.4px 16px",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  ФИО
+                </TableCell>
+                <TableCell
+                  sx={{
+                    background: "#f5f5f5",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    padding: "14.4px 16px",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  Номер полиса
+                </TableCell>
+                <TableCell
+                  sx={{
+                    background: "#f5f5f5",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    padding: "14.4px 16px",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  Пол
+                </TableCell>
+                <TableCell
+                  sx={{
+                    background: "#f5f5f5",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    padding: "14.4px 16px",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  Дата рождения
+                </TableCell>
+                <TableCell
+                  sx={{
+                    background: "#f5f5f5",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    padding: "14.4px 16px",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  Действия
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {patients.length === 0 && !loading && !error ? (
                 <TableRow>
                   <TableCell colSpan={5}>
-                    <EmptyStateContainer>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "100px",
+                        padding: "32px",
+                      }}
+                    >
                       <Typography variant="h6">
                         В реестре нет записей
                       </Typography>
-                    </EmptyStateContainer>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -306,21 +383,34 @@ const PatientTable: React.FC = () => {
                     onClick={() => handleRowClick(patient)}
                     sx={{ cursor: "pointer" }}
                   >
-                    <NameTableCell>
+                    <TableCell
+                      sx={{
+                        maxWidth: "300px",
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        padding: "12px 16px",
+                      }}
+                    >
                       {`${patient.lastName} ${patient.firstName} ${
                         patient.middleName || ""
                       }`}
-                    </NameTableCell>
-                    <BodyTableCell>{patient.insuranceNumber}</BodyTableCell>
-                    <BodyTableCell>
+                    </TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
+                      {patient.insuranceNumber}
+                    </TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       {patient.gender === "М" ? "Мужской" : "Женский"}
-                    </BodyTableCell>
-                    <BodyTableCell>
+                    </TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       {format(new Date(patient.birthDate), "dd MMMM yyyy", {
                         locale: ru,
                       })}
-                    </BodyTableCell>
-                    <BodyTableCell onClick={(e) => e.stopPropagation()}>
+                    </TableCell>
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ padding: "12px 16px" }}
+                    >
                       <IconButton
                         onClick={(): void => handleEditClick(patient)}
                         aria-label={`Редактировать пациента ${patient.lastName}`}
@@ -333,7 +423,7 @@ const PatientTable: React.FC = () => {
                       >
                         <DeleteIcon color="error" />
                       </IconButton>
-                    </BodyTableCell>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -344,35 +434,68 @@ const PatientTable: React.FC = () => {
               <CircularProgress />
             </Box>
           )}
-        </StyledTableContainer>
-        <FooterContainer>
-          <RecordsCounter>
+        </TableContainer>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px",
+            backgroundColor: "#f5f5f5",
+            borderBottomLeftRadius: "4px",
+            borderBottomRightRadius: "4px",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "1.1rem",
+              fontWeight: 500,
+              color: "rgba(0, 0, 0, 0.6)",
+            }}
+          >
             Показано записей: {patients.length} из {totalElements}
-          </RecordsCounter>
-        </FooterContainer>
-      </StyledPaper>
+          </Typography>
+        </Box>
+      </Paper>
 
-      <FabContainer>
-        <StyledFab
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          zIndex: 1000,
+          display: "flex",
+          gap: "16px",
+        }}
+      >
+        <Fab
           color="primary"
           aria-label="Обновить список пациентов"
           onClick={handleRefresh}
           disabled={isRefreshing || loading}
+          sx={{
+            boxShadow:
+              "0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)",
+          }}
         >
           {isRefreshing ? (
             <CircularProgress size={24} color="inherit" />
           ) : (
             <RefreshIcon />
           )}
-        </StyledFab>
-        <StyledFab
+        </Fab>
+        <Fab
           color="primary"
           aria-label="Добавить нового пациента"
           onClick={handleCreateClick}
+          sx={{
+            boxShadow:
+              "0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)",
+          }}
         >
           <AddIcon />
-        </StyledFab>
-      </FabContainer>
+        </Fab>
+      </Box>
 
       <DeleteDialog
         open={openDeleteDialog}

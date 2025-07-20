@@ -17,7 +17,7 @@ import {
   API_ENDPOINTS,
   PAGINATION,
   ERROR_MESSAGES,
-} from "../../utils/constants"; // Добавлено ERROR_MESSAGES
+} from "../../utils/constants";
 import { Disease, Mkb10DictionaryItem } from "../../types/patient";
 
 interface DiseaseFormProps {
@@ -100,10 +100,8 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
         );
       } catch (error) {
         console.error("Error fetching MKB10 dictionary:", error);
-        // Обработка ошибок при загрузке справочника МКБ-10
         if (axios.isAxiosError(error)) {
           if (error.code === "ERR_NETWORK" || error.response?.status === 503) {
-            // 503 Service Unavailable
             setError(ERROR_MESSAGES.SERVICE_UNAVAILABLE);
           } else {
             setError(
@@ -227,6 +225,15 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
         gap: 3,
         p: 1,
         width: "100%",
+        "& .MuiOutlinedInput-root": {
+          borderRadius: 2,
+        },
+        "& .MuiButton-root": {
+          borderRadius: 2,
+        },
+        "& .MuiAlert-root": {
+          borderRadius: 2,
+        },
       }}
     >
       {error && (
@@ -392,6 +399,11 @@ const DiseaseForm: React.FC<DiseaseFormProps> = ({
                 shouldDirty: true,
               })
             }
+            sx={{
+              "& .MuiSvgIcon-root": {
+                borderRadius: 1,
+              },
+            }}
           />
         }
         label="Выдан лист нетрудоспособности"

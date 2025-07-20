@@ -20,7 +20,15 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   onConfirm,
 }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      sx={{
+        "& .MuiDialog-paper": {
+          borderRadius: "8px",
+        },
+      }}
+    >
       <DialogTitle>Подтверждение удаления</DialogTitle>
       <DialogContent>
         <DialogContentText>

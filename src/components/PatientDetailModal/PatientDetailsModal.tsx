@@ -161,13 +161,23 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Детальная информация о пациенте</DialogTitle>
-      <DialogContent dividers>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 2 }}>Детальная информация о пациенте</DialogTitle>
+      <DialogContent dividers sx={{ borderColor: "divider" }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom>
             ФИО:{" "}
-            <Typography component="span" variant="body1">
+            <Typography component="span" variant="body1" color="text.secondary">
               {`${patient.lastName} ${patient.firstName} ${
                 patient.middleName || ""
               }`}
@@ -175,13 +185,13 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
           </Typography>
           <Typography variant="h6" gutterBottom>
             Пол:{" "}
-            <Typography component="span" variant="body1">
+            <Typography component="span" variant="body1" color="text.secondary">
               {patient.gender === "М" ? "Мужской" : "Женский"}
             </Typography>
           </Typography>
           <Typography variant="h6" gutterBottom>
             Дата рождения:{" "}
-            <Typography component="span" variant="body1">
+            <Typography component="span" variant="body1" color="text.secondary">
               {format(new Date(patient.birthDate), "dd MMMM yyyy", {
                 locale: ru,
               })}
@@ -189,7 +199,7 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
           </Typography>
           <Typography variant="h6" gutterBottom>
             Номер полиса ОМС:{" "}
-            <Typography component="span" variant="body1">
+            <Typography component="span" variant="body1" color="text.secondary">
               {patient.insuranceNumber}
             </Typography>
           </Typography>
@@ -203,11 +213,14 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
             mb: 2,
           }}
         >
-          <Typography variant="h5">Заболевания:</Typography>
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+            Заболевания:
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAddClick}
+            sx={{ borderRadius: 2 }}
           >
             Добавить заболевание
           </Button>
@@ -231,13 +244,13 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
             </Typography>
           </Box>
         ) : patientDiseases.length === 0 ? (
-          <Typography variant="body1" color="textSecondary">
+          <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
             {ERROR_MESSAGES.NO_DISEASES}
           </Typography>
         ) : (
           <>
             {patientDiseases.map((disease: Disease) => (
-              <Accordion key={disease.id} sx={{ mb: 1 }}>
+              <Accordion key={disease.id} sx={{ mb: 1, borderRadius: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box
                     sx={{
@@ -245,6 +258,7 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                       justifyContent: "space-between",
                       width: "100%",
                       alignItems: "center",
+                      pr: 1,
                     }}
                   >
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -269,14 +283,14 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                     </Box>
                   </Box>
                 </AccordionSummary>
-                <AccordionDetails>
-                  <Typography>
+                <AccordionDetails sx={{ borderTop: "1px dashed #e0e0e0" }}>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
                     <strong>Дата начала болезни:</strong>{" "}
                     {format(new Date(disease.startDate), "dd MMMM yyyy", {
                       locale: ru,
                     })}
                   </Typography>
-                  <Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
                     <strong>Дата окончания болезни:</strong>{" "}
                     {disease.endDate
                       ? format(new Date(disease.endDate), "dd MMMM yyyy", {
@@ -284,11 +298,11 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                         })
                       : "Не указана"}
                   </Typography>
-                  <Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
                     <strong>Назначения:</strong>{" "}
                     {disease.prescriptions || "Нет назначений"}
                   </Typography>
-                  <Typography>
+                  <Typography variant="body2">
                     <strong>Выдан лист нетрудоспособности:</strong>{" "}
                     {disease.sickLeaveIssued ? "Да" : "Нет"}
                   </Typography>
@@ -301,6 +315,7 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
                   variant="outlined"
                   onClick={handleLoadMore}
                   disabled={diseasesLoading}
+                  sx={{ borderRadius: 2 }}
                 >
                   {diseasesLoading ? (
                     <CircularProgress size={24} />
@@ -313,8 +328,10 @@ const PatientDetailsModal: React.FC<PatientDetailsModalProps> = ({
           </>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Закрыть</Button>
+      <DialogActions sx={{ pt: 2, pr: 3, pb: 2 }}>
+        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
+          Закрыть
+        </Button>
       </DialogActions>
       <DeleteDialog
         open={openDeleteDialog}
