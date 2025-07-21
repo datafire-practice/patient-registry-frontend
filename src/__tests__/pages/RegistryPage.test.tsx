@@ -2,11 +2,12 @@ import { render, screen } from "@testing-library/react";
 import RegistryPage from "../../pages/RegistryPage";
 import { PatientTable } from "../../components";
 
-jest.mock("../../components/PatientTable/PatientTable", () => {
-  return jest.fn(() => (
+jest.mock("../../components", () => ({
+  ...jest.requireActual("../../components"),
+  PatientTable: jest.fn(() => (
     <div data-testid="patient-table">Таблица пациентов</div>
-  ));
-});
+  )),
+}));
 
 describe("RegistryPage", () => {
   beforeEach(() => {

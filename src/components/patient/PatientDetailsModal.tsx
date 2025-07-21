@@ -21,12 +21,9 @@ import AddIcon from "@mui/icons-material/Add";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import type { Disease, Patient } from "../../types";
-import { DeleteDialog, DiseaseModalForm } from "..";
+import { DeleteDialog, DiseaseModalForm } from "../../components";
 import { ERROR_MESSAGES } from "../../utils/constants";
-import {
-  usePatientDiseasesData,
-  usePatientDiseaseDialogs,
-} from "../../hooks/patient";
+import { usePatientDiseasesData, usePatientDiseaseDialogs } from "../../hooks";
 
 interface PatientDetailsModalProps {
   open: boolean;

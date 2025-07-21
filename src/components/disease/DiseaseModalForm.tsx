@@ -7,7 +7,7 @@ import {
   Button,
 } from "@mui/material";
 import type { Disease } from "../../types";
-import { DiseaseForm } from "..";
+import { DiseaseForm } from "../../components";
 
 interface DiseaseModalFormProps {
   open: boolean;

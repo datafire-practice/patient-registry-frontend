@@ -13,8 +13,7 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format, parseISO, isFuture, isBefore, isValid } from "date-fns";
 import type { Disease, Mkb10DictionaryItem } from "../../types";
-import { useMkb10Search, useDiseaseFormSubmit } from "../../hooks/disease";
-
+import { useMkb10Search, useDiseaseFormSubmit } from "../../hooks";
 interface DiseaseFormProps {
   onSubmit: () => void;
   patientId: number;

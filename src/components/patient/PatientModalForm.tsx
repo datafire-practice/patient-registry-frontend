@@ -6,7 +6,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { PatientForm } from "..";
+import { PatientForm } from "../../components";
 import type { PatientFormData } from "../../types";
 
 interface PatientModalFormProps {

@@ -13,20 +13,21 @@ import {
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
-
 import {
   usePatientData,
   usePatientActions,
   usePatientDialog,
-} from "../../../hooks/patient";
+} from "../../../hooks";
 import type { Patient, PatientFormData } from "../../../types";
-import { DeleteDialog, PatientModalForm, PatientDetailsModal } from "../..";
 import {
+  DeleteDialog,
+  PatientModalForm,
+  PatientDetailsModal,
   PatientTableHead,
   PatientTableBodyContent,
   PatientTableErrorState,
   GlobalLoadingIndicator,
-} from ".";
+} from "../../../components";
 
 export const PatientTable: React.FC = () => {
   const {
