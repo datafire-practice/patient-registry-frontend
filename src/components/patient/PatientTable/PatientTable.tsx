@@ -67,6 +67,13 @@ export const PatientTable: React.FC = () => {
   const handleRefreshClick = async (): Promise<void> => {
     setIsRefreshing(true);
     await handleDataRefresh();
+    if (tableContainerRef.current) {
+      setTimeout(() => {
+        if (tableContainerRef.current) {
+          tableContainerRef.current.scrollTop = 0;
+        }
+      }, 0);
+    }
     setIsRefreshing(false);
   };
 
@@ -159,6 +166,8 @@ export const PatientTable: React.FC = () => {
               borderRadius: "6px",
             },
             "&::-webkit-scrollbar-thumb:hover": { background: "#555" },
+            scrollbarWidth: "thin",
+            scrollbarColor: "#888 #f1f1f1",
           }}
         >
           <Table stickyHeader size="medium">
